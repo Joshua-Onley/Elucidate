@@ -5,9 +5,6 @@ function SignUpPage() {
   return (
     <div>
         <SignUp></SignUp>
-
-
-      
     </div>
   )
 }
