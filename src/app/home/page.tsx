@@ -2,23 +2,9 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-type Question = {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-};
-
-type User = {
-  id: number;
-  name: string;
-  age: number;
-  photo: string;
-  questions: Question[];
-
-}
+import { ProfileUpdateModal } from '@/app/components/ProfileUpdateModal'
 
 const mockUsers = [
   {
@@ -70,41 +56,64 @@ const mockUsers = [
 ]
 
 export default function HomePage() {
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState(mockUsers[0]) // Assume the first user is the current user
+
+  const handleProfileUpdate = (updatedProfile: any) => {
+    setCurrentUser(prevUser => ({
+      ...prevUser,
+      ...updatedProfile,
+    }))
+    // In a real app, you would send this data to your backend here
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold text-white text-center">Elucidate</h1>
-        <p className="text-xl text-white text-center mt-2">Unblur your perfect match</p>
+      <header className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-white">Elucidate</h1>
+          <p className="text-xl text-white mt-2">Unblur your perfect match</p>
+        </div>
+        <Button 
+          onClick={() => setIsProfileModalOpen(true)}
+          className="bg-white text-purple-600 hover:bg-purple-100"
+        >
+          Update Profile
+        </Button>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {mockUsers.map((user) => (
           <UserCard key={user.id} user={user} />
         ))}
       </div>
+      <ProfileUpdateModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onSave={handleProfileUpdate}
+        initialData={currentUser}
+      />
     </div>
   )
 }
 
-function UserCard({ user }: { user: User }) {
+function UserCard({ user }: { user: any }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answeredQuestions, setAnsweredQuestions] = useState(0)
-  const [guessesRemaining, setGuessesRemaining] = useState(3)
+  const [attempts, setAttempts] = useState(0)
+
 
   const handleAnswer = (optionIndex: number) => {
 
-    if (guessesRemaining <= 0) return;
+    if (attempts >= 3) {
+      return;
+    }
+
 
     if (user.questions[currentQuestionIndex].correctAnswer === optionIndex) {
       setAnsweredQuestions(prev => Math.min(prev + 1, 3))
     }
     setCurrentQuestionIndex(prev => (prev + 1) % user.questions.length)
-
-    setGuessesRemaining(prev => prev - 1); // Decrement guesses remaining
-
-    // Move to the next question or reset if all questions are answered
-    setCurrentQuestionIndex(prev => (prev + 1) % user.questions.length)
-
-
+    setAttempts(prev => prev + 1)
   }
 
   const blurAmount = 20 - (answeredQuestions * 6) // Decrease blur as questions are answered correctly
