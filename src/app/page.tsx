@@ -1,11 +1,11 @@
 
-import Login from '@/app/components/Login';
+import AuthenticationPage from './auth/page';
 
 
 export default function Home() {
   return (
     <div>
-      <Login></Login>
+      <AuthenticationPage></AuthenticationPage>
     </div>
   );
 }
