@@ -58,10 +58,10 @@ export default function AuthenticationPage() {
               setMessage(isSignUp ? 'Signup successful!' : 'Login successful!');
               if (isSignUp) {
                   // Redirect to home page after successful sign-up
-                  router.push('/profilesetup'); 
+                  router.push(`/profile?email=${encodeURIComponent(formData.email || '')}`); 
               } else {
                   // Redirect to home page after successful login
-                  router.push('/home');
+                  router.push(`/home?email=${encodeURIComponent(formData.email || '')}`);
               }
           } else {
               setError(data.message || 'An error occurred. Please try again.');
