@@ -8,7 +8,7 @@ interface RequestBody {
     questions: Array<{
         question: string;
         options: string[];
-        correctAnswer: number;
+        correctAnswer: string;
     }>;
 }
 

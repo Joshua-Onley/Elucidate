@@ -17,11 +17,10 @@ interface FormValues {
     questions: Array<{
       question: string;
       options: string[];
-      correctAnswer: number;
+      correctAnswer: string;
     }>;
   }
   
-
 
 export default function ProfileSetup() {
     const router = useRouter();
@@ -33,7 +32,11 @@ export default function ProfileSetup() {
   const [formValues, setFormValues] = useState<FormValues>({
     name: '',
     email: emailFromQuery,
-    questions: Array(3).fill({ question: '', options: ['', '', '', ''], correctAnswer: 0 }),
+    questions: Array(3).fill(null).map(() => ({
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: '0',
+    })),
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +61,11 @@ export default function ProfileSetup() {
       // Update specific option
       const updatedQuestions = [...formValues.questions];
       updatedQuestions[index].options[optionIndex] = value;
+
+      if (optionIndex === 0) {
+        updatedQuestions[index].correctAnswer = value;
+      }
+      
       setFormValues({ ...formValues, questions: updatedQuestions });
     } else if (index !== undefined) {
       // Update specific question
@@ -148,7 +156,7 @@ export default function ProfileSetup() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-lg font-medium text-gray-700">Email</Label>
+              
               <Input
                     id="email"
                     type="hidden"
