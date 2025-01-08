@@ -58,7 +58,7 @@ export default function AuthenticationPage() {
               setMessage(isSignUp ? 'Signup successful!' : 'Login successful!');
               if (isSignUp) {
                   // Redirect to home page after successful sign-up
-                  router.push('/home'); 
+                  router.push('/profilesetup'); 
               } else {
                   // Redirect to home page after successful login
                   router.push('/home');
