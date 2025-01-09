@@ -110,8 +110,12 @@ export default function ProfileSetup() {
 
       alert('Profile setup successful!');
       router.push(`/home?email=${encodeURIComponent(formValues.email || '')}`)
-    } catch (err: any) {
-      setError(err.message || 'An unknown error occurred');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'An unknown error occurred');
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setLoading(false);
     }

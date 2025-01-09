@@ -27,7 +27,6 @@ export interface User {
 }
 export default function HomePage() {
   const [users, setUsers] = useState<User[]>([]) // State to hold fetched users
-  const [currentUser, setCurrentUser] = useState<User | null>(null) // Current user for the modal
 
   // Fetch users when component mounts
   useEffect(() => {
@@ -37,7 +36,7 @@ export default function HomePage() {
         const data = await response.json()
         console.log('Fetched Users:', data); // Debug output
         setUsers(data)
-        if (data.length > 0) setCurrentUser(data[0]) // Set the first user as default
+        
       } catch (error) {
         console.error('Failed to fetch users:', error)
       }
