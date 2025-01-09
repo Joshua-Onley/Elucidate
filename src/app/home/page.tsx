@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-
 export interface Option {
   id: number;
   option: string;
@@ -23,10 +22,11 @@ export interface User {
   name: string;
   photo: string;
   questions: Question[];
-  
 }
+
 export default function HomePage() {
   const [users, setUsers] = useState<User[]>([]) // State to hold fetched users
+  const [currentUserIndex, setCurrentUserIndex] = useState(0) // Track the current user being displayed
 
   // Fetch users when component mounts
   useEffect(() => {
@@ -36,7 +36,6 @@ export default function HomePage() {
         const data = await response.json()
         console.log('Fetched Users:', data); // Debug output
         setUsers(data)
-        
       } catch (error) {
         console.error('Failed to fetch users:', error)
       }
@@ -44,25 +43,28 @@ export default function HomePage() {
     fetchUsers()
   }, [])
 
+  const moveToNextUser = () => {
+    setCurrentUserIndex((prevIndex) => (prevIndex + 1) % users.length)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8">
-      <header className="mb-8 flex justify-between items-center">
+      <header className="mb-8 flex justify-between items-center text-center">
         <div>
           <h1 className="text-4xl font-bold text-white">Elucidate</h1>
           <p className="text-xl text-white mt-2">Unblur your perfect match</p>
         </div>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {users.map((user) => (
-          <UserCard key={user.id} user={user} />
-        ))}
+        {users.length > 0 && (
+          <UserCard key={users[currentUserIndex].id} user={users[currentUserIndex]} onComplete={moveToNextUser} />
+        )}
       </div>
     </div>
   )
 }
 
-function UserCard({ user }: { user: User }) {
+function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answeredQuestions, setAnsweredQuestions] = useState(0)
   const [attempts, setAttempts] = useState(0)
@@ -103,7 +105,13 @@ function UserCard({ user }: { user: User }) {
   // Calculate blur amount based on the number of correct answers
   const blurAmount = answeredQuestions === 3 ? 0 : Math.max(0, 20 - answeredQuestions * 6); // Min blur of 0
 
-  // Get current question
+  // Check if the user has completed all 3 guesses
+  useEffect(() => {
+    if (attempts >= 3) {
+      onComplete(); // Call onComplete to move to the next user
+    }
+  }, [attempts, onComplete]);
+
   const currentQuestion = user.questions[currentQuestionIndex];
 
   return (
@@ -113,7 +121,7 @@ function UserCard({ user }: { user: User }) {
       transition={{ duration: 0.5 }}
     >
       <Card className="bg-white bg-opacity-90 overflow-hidden">
-        <CardHeader className="relative h-96">
+        <CardHeader className="relative h-96 mb-4">
           <div className="absolute inset-0 bg-cover bg-center" style={{
             backgroundImage: `url(${user.photo})`,
             filter: `blur(${blurAmount}px)`,
