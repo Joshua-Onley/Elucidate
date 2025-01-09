@@ -18,7 +18,7 @@ interface Question {
   options: Option[];
 }
 
-interface User {
+export interface User {
   id: number;
   name: string;
   photo: string;
@@ -35,6 +35,7 @@ export default function HomePage() {
       try {
         const response = await fetch('/api/users/fetchUsers') // Replace with your API endpoint
         const data = await response.json()
+        console.log('Fetched Users:', data); // Debug output
         setUsers(data)
         if (data.length > 0) setCurrentUser(data[0]) // Set the first user as default
       } catch (error) {
@@ -66,18 +67,45 @@ function UserCard({ user }: { user: User }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answeredQuestions, setAnsweredQuestions] = useState(0)
   const [attempts, setAttempts] = useState(0)
+  const [shuffledOptions, setShuffledOptions] = useState<Option[]>([])
 
-  const handleAnswer = (optionIndex: number) => {
-    if (attempts >= 3) return
-
-    if (user.questions[currentQuestionIndex].correctAnswer === user.questions[currentQuestionIndex].options[optionIndex].option) {
-      setAnsweredQuestions(prev => Math.min(prev + 1, 3))
+  // Helper function to shuffle options
+  const shuffleOptions = (options: Option[]) => {
+    const shuffledOptions = [...options];
+    for (let i = shuffledOptions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]]; // Swap elements
     }
-    setCurrentQuestionIndex(prev => (prev + 1) % user.questions.length)
-    setAttempts(prev => prev + 1)
-  }
+    return shuffledOptions;
+  };
 
-  const blurAmount = 20 - (answeredQuestions * 6) // Decrease blur as questions are answered correctly
+  // Shuffle options for the current question
+  useEffect(() => {
+    const currentQuestion = user.questions[currentQuestionIndex];
+    setShuffledOptions(shuffleOptions(currentQuestion.options));
+  }, [currentQuestionIndex, user.questions]);
+
+  // Handle answer selection
+  const handleAnswer = (selectedOption: Option) => {
+    if (attempts >= 3) return; // Prevent answering more than 3 times
+
+    const currentQuestion = user.questions[currentQuestionIndex];
+
+    // Check if the selected answer is correct
+    if (selectedOption.option === currentQuestion.correctAnswer) {
+      setAnsweredQuestions((prev) => Math.min(prev + 1, 3)); // Increase answered questions count, capped at 3
+    }
+
+    // Move to the next question
+    setCurrentQuestionIndex((prev) => (prev + 1) % user.questions.length);
+    setAttempts((prev) => prev + 1); // Track number of attempts
+  };
+
+  // Calculate blur amount based on the number of correct answers
+  const blurAmount = answeredQuestions === 3 ? 0 : Math.max(0, 20 - answeredQuestions * 6); // Min blur of 0
+
+  // Get current question
+  const currentQuestion = user.questions[currentQuestionIndex];
 
   return (
     <motion.div
@@ -105,14 +133,14 @@ function UserCard({ user }: { user: User }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <p className="font-semibold mb-2">{user.questions[currentQuestionIndex].question}</p>
+              <p className="font-semibold mb-2">{currentQuestion.question}</p>
               <div className="grid grid-cols-2 gap-2">
-                {user.questions[currentQuestionIndex].options.map((option: any, oIndex: number) => (
+                {shuffledOptions.map((option: Option) => (
                   <Button
-                    key={oIndex}
+                    key={option.id}
                     variant="outline"
                     className="text-sm"
-                    onClick={() => handleAnswer(oIndex)}
+                    onClick={() => handleAnswer(option)}
                   >
                     {option.option}
                   </Button>
@@ -128,5 +156,5 @@ function UserCard({ user }: { user: User }) {
         </CardFooter>
       </Card>
     </motion.div>
-  )
+  );
 }

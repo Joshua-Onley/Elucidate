@@ -1,26 +1,27 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db'; // Adjust the import path to match your project structure
 
-export async function GET(request: Request) {
+
+// asynchronous function that handles a http GET request
+export async function GET() {
     try {
-        // Extract query parameters for pagination
-        const url = new URL(request.url);
-        const limit = parseInt(url.searchParams.get('limit') || '10');  // Default to 10 users per request
-        const offset = parseInt(url.searchParams.get('offset') || '0'); // Default to start from the first user
 
         // Query to fetch users along with their questions and options
+        // in the future if the size of the users database grows need to limit the number of users fetched for each request
+        // query selects user_id, name, and photo of users, along with their questions and options
+     
         const query = `
             SELECT
-                u.user_id AS id, u.name, u.photo,
-                q.id AS question_id, q.question_text AS question, q.correct_answer,
-                o.id AS option_id, o.option_text AS option
-            FROM users u
-            LEFT JOIN questions q ON u.user_id = q.user_id
-            LEFT JOIN options o ON q.id = o.question_id
-            LIMIT $1 OFFSET $2;
+    u.user_id AS id, u.name, u.photo,
+    q.id AS question_id, q.question_text AS question, q.correct_answer,
+    o.id AS option_id, o.option_text AS option
+FROM users u
+INNER JOIN questions q ON u.user_id = q.user_id
+INNER JOIN options o ON q.id = o.question_id;
+
         `;
         
-        const result = await pool.query(query, [limit, offset]);
+        const result = await pool.query(query);
 
         // Group data by user
         const users = result.rows.reduce((acc: any[], row: any) => {
