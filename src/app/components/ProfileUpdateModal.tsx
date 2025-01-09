@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X } from 'lucide-react'
+import { Option } from "@/app/home/page";
 
 interface ProfileUpdateModalProps {
   isOpen: boolean
@@ -19,7 +20,7 @@ interface ProfileData {
   photo: string
   questions: Array<{
     question: string
-    options: string[]
+    options: Option[]
     correctAnswer: number
   }>
 }
