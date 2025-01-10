@@ -31,8 +31,22 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      // Get email from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get('email'); // Assuming the URL has the format /home?email=user@example.com
+
+      if (!email) {
+        console.error('Email not found in URL');
+        return;
+      }
+
       try {
-        const response = await fetch('/api/users/fetchUsers')
+        const response = await fetch('/api/users/fetchUsers', {
+          method: 'GET',
+          headers: {
+            'Authorization': email // Send current user's email in the Authorization header
+          }
+        })
         const data = await response.json()
         console.log('Fetched Users:', data);
         setUsers(data)
