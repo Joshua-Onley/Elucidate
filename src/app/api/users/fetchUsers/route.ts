@@ -43,11 +43,12 @@ export async function GET(req: Request) {
         }
 
         const currentUser = currentUserResult.rows[0];
-        const { gender: currentUserGender, showToUser } = currentUser;
+        console.log(currentUser)
+        const { gender: currentUserGender, showtouser } = currentUser;
 
         console.log('Current User Email:', currentUserEmail);
         console.log('Current User Gender:', currentUserGender);
-        console.log('Show To User:', showToUser);
+        console.log('Show To User:', showtouser);
 
         // Adjust query to fetch filtered users based on current user's preferences
         const query = `
@@ -58,12 +59,12 @@ export async function GET(req: Request) {
             FROM users u
             INNER JOIN questions q ON u.user_id = q.user_id
             INNER JOIN options o ON q.id = o.question_id
-            WHERE u.email != $1 and u.showuserprofileto = $2
+            WHERE u.email != $1 and u.showuserprofileto = $2 and u.gender = $3
             
         `;
 
         // Execute query with parameters
-        const result = await pool.query(query, [currentUserEmail, currentUserGender]);
+        const result = await pool.query(query, [currentUserEmail, currentUserGender, showtouser]);
 
         // Group data by user
         const users = result.rows.reduce<User[]>((acc, row) => {
