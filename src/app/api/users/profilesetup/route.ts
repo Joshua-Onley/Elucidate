@@ -4,7 +4,11 @@ import pool from '../../../lib/db';
 interface RequestBody {
     name: string;
     photo: string;
-    email: string;  // Include email in the request
+    email: string;
+    age: number;
+    gender: 'male' | 'female';
+    showUserProfileTo: 'men' | 'women';
+    showToUser: 'men' | 'women';
     questions: Array<{
         question: string;
         options: string[];
@@ -13,12 +17,12 @@ interface RequestBody {
 }
 
 export async function POST(req: Request) {
-    const { name, photo, email, questions }: RequestBody = await req.json();
+    const { name, photo, email, age, gender, showUserProfileTo, showToUser, questions }: RequestBody = await req.json();
 
-    // Check if name, photo, email, and questions are provided
-    if (!name || !photo || !email || !questions || !Array.isArray(questions)) {
+    // Validate required fields
+    if (!name || !photo || !email || !age || !gender || !showUserProfileTo || !showToUser || !questions || !Array.isArray(questions)) {
         return NextResponse.json(
-            { message: 'Name, photo, email, and questions are required' },
+            { message: 'Name, photo, email, age, gender, preferences, and questions are required' },
             { status: 400 }
         );
     }
@@ -42,13 +46,24 @@ export async function POST(req: Request) {
         // Get the user_id from the existing user
         const userId = userResult.rows[0].user_id;
 
-        // Update the user's name and photo
+        // Update the user's name, photo, age, gender, and preferences
         await pool.query(
-            `UPDATE users SET name = $1, photo = $2 WHERE user_id = $3`,
-            [name, photo, userId]
+            `UPDATE users 
+             SET name = $1, photo = $2, age = $3, gender = $4, 
+                 showUserProfileTo = $5, showToUser = $6 
+             WHERE user_id = $7`,
+            [
+                name,
+                photo,
+                age,
+                gender,
+                showUserProfileTo,
+                showToUser,
+                userId,
+            ]
         );
 
-        // Insert the user's questions
+        // Insert or update the user's questions
         for (const question of questions) {
             const { question: questionText, options, correctAnswer } = question;
 

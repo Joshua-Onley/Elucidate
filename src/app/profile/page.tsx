@@ -13,6 +13,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 
 interface FormValues {
     name: string;
+    age: number;
+    gender: "male" | "female";
+    showUserProfileTo: "male" | "female";
+    showToUser: "male" | "female";
     email: string | null;
     questions: Array<{
       question: string;
@@ -31,6 +35,10 @@ export default function ProfileSetup() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<FormValues>({
     name: '',
+    age: 18, // Default age
+    gender: "male", // Default gender
+    showUserProfileTo: "male", // Default preference
+    showToUser: "male", // Default preference
     email: emailFromQuery,
     questions: Array(3).fill(null).map(() => ({
       question: '',
@@ -38,6 +46,7 @@ export default function ProfileSetup() {
       correctAnswer: '0',
     })),
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,17 +91,16 @@ export default function ProfileSetup() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
-      const formData = new FormData();
-      formData.append('name', formValues.name);
-      formData.append('photo', photo as File);
-      formData.append('questions', JSON.stringify(formValues.questions));
-
       const response = await fetch('/api/users/profilesetup', {
         method: 'POST',
         body: JSON.stringify({
           name: formValues.name,
+          age: formValues.age,
+          gender: formValues.gender,
+          showUserProfileTo: formValues.showUserProfileTo,
+          showToUser: formValues.showToUser,
           email: formValues.email,
           photo: photo?.name || '',
           questions: formValues.questions,
@@ -101,15 +109,15 @@ export default function ProfileSetup() {
           'Content-Type': 'application/json',
         },
       });
-
+  
       const result = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(result.message || 'Failed to set up profile');
       }
-
+  
       alert('Profile setup successful!');
-      router.push(`/home?email=${encodeURIComponent(formValues.email || '')}`)
+      router.push(`/home?email=${encodeURIComponent(formValues.email || '')}`);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || 'An unknown error occurred');
@@ -160,6 +168,62 @@ export default function ProfileSetup() {
             </div>
 
             <div className="space-y-2">
+  <Label htmlFor="age" className="text-lg font-medium text-gray-700">Age</Label>
+  <Input
+    id="age"
+    type="number"
+    min="18" // Assuming 18 is the minimum age
+    placeholder="Your age"
+    required
+    className="border-purple-300 focus:border-purple-500 focus:ring-purple-500"
+    value={formValues.age}
+    onChange={(e) => setFormValues({ ...formValues, age: parseInt(e.target.value, 10) })}
+  />
+</div>
+
+<div className="space-y-2">
+  <Label htmlFor="gender" className="text-lg font-medium text-gray-700">Gender</Label>
+  <select
+    id="gender"
+    className="w-full border border-purple-300 rounded-md focus:border-purple-500 focus:ring-purple-500"
+    value={formValues.gender}
+    onChange={(e) => setFormValues({ ...formValues, gender: e.target.value as "male" | "female" })}
+  >
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+</div>
+
+<div className="space-y-2">
+  <Label htmlFor="showUserProfileTo" className="text-lg font-medium text-gray-700">Show my profile to</Label>
+  <select
+    id="showUserProfileTo"
+    className="w-full border border-purple-300 rounded-md focus:border-purple-500 focus:ring-purple-500"
+    value={formValues.showUserProfileTo}
+    onChange={(e) => setFormValues({ ...formValues, showUserProfileTo: e.target.value as "male" | "female" })}
+  >
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+</div>
+
+<div className="space-y-2">
+  <Label htmlFor="showToUser" className="text-lg font-medium text-gray-700">Do you want to be shown male or female profiles?</Label>
+  <select
+    id="showToUser"
+    className="w-full border border-purple-300 rounded-md focus:border-purple-500 focus:ring-purple-500"
+    value={formValues.showToUser}
+    onChange={(e) => setFormValues({ ...formValues, showToUser: e.target.value as "male" | "female" })}
+  >
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+</div>
+
+
+
+
+            <div className="space-y-2">
               
               <Input
                     id="email"
@@ -194,7 +258,7 @@ export default function ProfileSetup() {
 
             {error && <p className="text-red-500">{error}</p>}
 
-            <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+            <Button type="submit" disabled={loading || !formValues.name || !formValues.email || !photo} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
               <Sparkles className="w-5 h-5 mr-2" />
               {loading ? 'Saving...' : 'Create Your Elucidate Profile'}
             </Button>
