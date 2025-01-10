@@ -25,16 +25,15 @@ export interface User {
 }
 
 export default function HomePage() {
-  const [users, setUsers] = useState<User[]>([]) // State to hold fetched users
-  const [currentUserIndex, setCurrentUserIndex] = useState(0) // Track the current user being displayed
+  const [users, setUsers] = useState<User[]>([])
+  const [currentUserIndex, setCurrentUserIndex] = useState(0)
 
-  // Fetch users when component mounts
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users/fetchUsers') // Replace with your API endpoint
+        const response = await fetch('/api/users/fetchUsers')
         const data = await response.json()
-        console.log('Fetched Users:', data); // Debug output
+        console.log('Fetched Users:', data);
         setUsers(data)
       } catch (error) {
         console.error('Failed to fetch users:', error)
@@ -48,14 +47,12 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8">
-      <header className="mb-8 flex justify-between items-center text-center">
-        <div>
-          <h1 className="text-4xl font-bold text-white">Elucidate</h1>
-          <p className="text-xl text-white mt-2">Unblur your perfect match</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8 flex flex-col items-center justify-center">
+      <header className="mb-8 text-center">
+        <h1 className="text-4xl font-bold text-white">Elucidate</h1>
+        <p className="text-xl text-white mt-2">Unblur your perfect match</p>
       </header>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="w-full max-w-md">
         {users.length > 0 && (
           <UserCard key={users[currentUserIndex].id} user={users[currentUserIndex]} onComplete={moveToNextUser} />
         )}
@@ -70,45 +67,38 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
   const [attempts, setAttempts] = useState(0)
   const [shuffledOptions, setShuffledOptions] = useState<Option[]>([])
 
-  // Helper function to shuffle options
   const shuffleOptions = (options: Option[]) => {
     const shuffledOptions = [...options];
     for (let i = shuffledOptions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]]; // Swap elements
+      [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
     }
     return shuffledOptions;
   };
 
-  // Shuffle options for the current question
   useEffect(() => {
     const currentQuestion = user.questions[currentQuestionIndex];
     setShuffledOptions(shuffleOptions(currentQuestion.options));
   }, [currentQuestionIndex, user.questions]);
 
-  // Handle answer selection
   const handleAnswer = (selectedOption: Option) => {
-    if (attempts >= 3) return; // Prevent answering more than 3 times
+    if (attempts >= 3) return;
 
     const currentQuestion = user.questions[currentQuestionIndex];
 
-    // Check if the selected answer is correct
     if (selectedOption.option === currentQuestion.correctAnswer) {
-      setAnsweredQuestions((prev) => Math.min(prev + 1, 3)); // Increase answered questions count, capped at 3
+      setAnsweredQuestions((prev) => Math.min(prev + 1, 3));
     }
 
-    // Move to the next question
     setCurrentQuestionIndex((prev) => (prev + 1) % user.questions.length);
-    setAttempts((prev) => prev + 1); // Track number of attempts
+    setAttempts((prev) => prev + 1);
   };
 
-  // Calculate blur amount based on the number of correct answers
-  const blurAmount = answeredQuestions === 3 ? 0 : Math.max(0, 20 - answeredQuestions * 6); // Min blur of 0
+  const blurAmount = answeredQuestions === 3 ? 0 : Math.max(0, 20 - answeredQuestions * 6);
 
-  // Check if the user has completed all 3 guesses
   useEffect(() => {
     if (attempts >= 3) {
-      onComplete(); // Call onComplete to move to the next user
+      onComplete();
     }
   }, [attempts, onComplete]);
 
@@ -125,7 +115,7 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
           <div className="absolute inset-0 bg-cover bg-center" style={{
             backgroundImage: `url(${user.photo})`,
             filter: `blur(${blurAmount}px)`,
-            transform: 'scale(1.1)' // Prevent blur from showing edges
+            transform: 'scale(1.1)'
           }} />
           <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 px-2 py-1 rounded">
             <p className="text-white font-semibold">{user.name}</p>
@@ -165,3 +155,4 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
     </motion.div>
   );
 }
+
