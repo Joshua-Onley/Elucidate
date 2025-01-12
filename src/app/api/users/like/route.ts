@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db';
 
 interface RequestBody {
-    liker_email: string;
-    liked_email: string;
+    likerEmail: string;
+    likedId: number;
 }
 
 export async function POST(req: Request) {
@@ -11,24 +11,25 @@ export async function POST(req: Request) {
 
     
         try {
-            const { liker_email, liked_email }: RequestBody = await req.json()
-            if (!liker_email || !liked_email) {
-                console.error("missing a user email in the request body")
+            const { likerEmail, likedId }: RequestBody = await req.json()
+            console.log(likerEmail, likedId)
+            if (!likerEmail || !likedId) {
+                console.error("missing a user email/id in the request body")
                 return NextResponse.json({ error: "missing email addresss"}, { status: 400 })
             }
 
-            const likerQuery = 'SELECT user_id FROM users WHERE user_id = $1';
-            const likedQuery = 'SELECT user_id FROM users WHERE user_id = $1';
+            const likerQuery = 'SELECT user_id FROM users WHERE email = $1';
+            
 
-            const likerResult = await pool.query(likerQuery, [liker_email])
-            const likedResult = await pool.query(likedQuery, [liked_email])
+            const likerResult = await pool.query(likerQuery, [likerEmail])
+            
 
-            if (likerResult.rows.length === 0 || likedResult.rows.length === 0) {
-                return NextResponse.json({ error: "User(s) not found"}, { status: 404 })
+            if (likerResult.rows.length === 0) {
+                return NextResponse.json({ error: "User not found"}, { status: 404 })
             }
 
             const liker_id = likerResult.rows[0].user_id;
-            const liked_id = likedResult.rows[0].user_id; 
+            
 
             const insertQuery = `
             INSERT INTO likes (liker_id, liked_id, created_at)
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
             RETURNING id;
             `
 
-            const insertResult = await pool.query(insertQuery, [liker_id, liked_id])
+            const insertResult = await pool.query(insertQuery, [liker_id, likedId])
 
             return NextResponse.json({
                 message: "Like successfully recorded",

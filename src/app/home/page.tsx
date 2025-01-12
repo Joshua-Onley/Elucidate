@@ -119,8 +119,43 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
     }
   }, [attempts]);
 
-  const handleRating = (rating: 'like' | 'dislike') => {
+  const handleRating = async (rating: 'like' | 'dislike') => {
     setRatingAnimation(rating);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const likerEmail = urlParams.get('email')
+
+    if (!likerEmail) {
+      console.error("liker email not found in the url");
+      return;
+    }
+
+    const likedId = user.id;
+
+    console.log('likerEmail:', likerEmail, 'likedId:', likedId); // Debugging
+
+
+    try {
+      const response = await fetch('/api/users/like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          likerEmail,
+          likedId,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to record like/dislike');
+      }
+  
+      console.log("Rating successfully recorded:", await response.json());
+    } catch (error) {
+      console.error("Error recording rating:", error);
+    }
+
     setTimeout(() => {
       setRatingAnimation(null);
       onComplete();
