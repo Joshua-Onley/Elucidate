@@ -119,6 +119,7 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
     }
   }, [attempts]);
 
+  
   const handleRating = async (rating: 'like' | 'dislike') => {
     setRatingAnimation(rating);
 
@@ -131,29 +132,47 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
     }
 
     const likedId = user.id;
-
     console.log('likerEmail:', likerEmail, 'likedId:', likedId); // Debugging
 
-
-    try {
-      const response = await fetch('/api/users/like', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          likerEmail,
-          likedId,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to record like/dislike');
+    if (rating == 'like') {
+      try {
+        const response = await fetch('/api/users/like', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            likerEmail,
+            likedId,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to record like/dislike');
+        }
+        console.log("Rating successfully recorded:", await response.json());
+      } catch (error) {
+        console.error("Error recording rating:", error);
       }
-  
-      console.log("Rating successfully recorded:", await response.json());
-    } catch (error) {
-      console.error("Error recording rating:", error);
+    } else {
+      // Ensure the correct API route is used for dislikes
+      try {
+        const response = await fetch('/api/users/dislike', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            likerEmail,
+            likedId,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to record dislike');
+        }
+        console.log("Dislike successfully recorded:", await response.json());
+      } catch (error) {
+        console.error("Error recording dislike:", error);
+      }
     }
 
     setTimeout(() => {
@@ -161,6 +180,8 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
       onComplete();
     }, 1000);
   };
+
+
 
   const currentQuestion = user.questions[currentQuestionIndex];
 
