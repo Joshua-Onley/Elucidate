@@ -31,7 +31,6 @@ export async function GET(req: Request) {
         if (!currentUserEmail) {
             return NextResponse.json({ message: 'Unauthorized request' }, { status: 401 });
         }
-
         // Query to fetch the current user's gender and preferences
         const currentUserResult = await pool.query(
             `SELECT gender, showtouser FROM users WHERE email = $1`,
