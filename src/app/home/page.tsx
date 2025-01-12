@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 
+
 export interface Option {
   id: number;
   option: string;
@@ -25,9 +26,30 @@ export interface User {
   questions: Question[];
 }
 
+export interface CurrentUser {
+  id: number;
+}
+
 export default function HomePage() {
   const [users, setUsers] = useState<User[]>([])
   const [currentUserIndex, setCurrentUserIndex] = useState(0)
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+
+  useEffect(() => {
+    // Fetch the current user from the session
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/users/fetchCurrentUser'); // Assuming this returns an object like { id: number }
+        const data = await response.json()
+        console.log(data)
+        setCurrentUser({ id: data.userId as number }); // Set the state as an object with `id` field
+      } catch (error) {
+        console.error("Error fetching user from session", error);
+      }
+    }
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -61,7 +83,7 @@ export default function HomePage() {
     setCurrentUserIndex((prevIndex) => (prevIndex + 1) % users.length)
   }
 
-  return (
+    return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8 flex flex-col items-center justify-center">
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-white">Elucidate</h1>
@@ -74,7 +96,6 @@ export default function HomePage() {
       </div>
     </div>
   )
-}
 
 function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -119,7 +140,6 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
     }
   }, [attempts]);
 
-  
   const handleRating = async (rating: 'like' | 'dislike') => {
     setRatingAnimation(rating);
 
@@ -180,8 +200,6 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
       onComplete();
     }, 1000);
   };
-
-
 
   const currentQuestion = user.questions[currentQuestionIndex];
 
@@ -272,4 +290,4 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
     </motion.div>
   );
 }
-
+}

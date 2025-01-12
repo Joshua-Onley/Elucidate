@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import pool from '../../../lib/db';
+import pool from '@/app/lib/db';
+import { createSession } from '@/app/lib/session';
 
 interface RequestBody {
     name: string;
@@ -87,6 +88,8 @@ export async function POST(req: Request) {
         }
 
         await pool.query('COMMIT');
+
+        await createSession(userId); // Assuming userId is sufficient to create the session
 
         return NextResponse.json({ message: 'Profile updated and questions added successfully' });
     } catch (err) {
