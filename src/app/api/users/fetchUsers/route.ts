@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db'; // Adjust the import path to match your project structure
 
+
+// TODO: dont fetch users from the database that the current users has already seen (i.e. they are already in the like or dislike table)
+
 // Define interfaces for user, question, and option
 interface Option {
   id: number;
