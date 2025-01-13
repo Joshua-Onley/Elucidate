@@ -30,14 +30,16 @@ interface User {
 export async function GET(req: Request) {
     try {
         // Assuming the current user's email is passed in the Authorization header
-        const currentUserEmail = req.headers.get('Authorization') || ''; // Adjust according to your authentication flow
-        if (!currentUserEmail) {
+        const authHeader = req.headers.get('Authorization');
+        const currentUserId = authHeader?.replace('Bearer ', '').trim() || '';
+
+        if (!currentUserId) {
             return NextResponse.json({ message: 'Unauthorized request' }, { status: 401 });
         }
         // Query to fetch the current user's gender and preferences
         const currentUserResult = await pool.query(
-            `SELECT gender, showtouser FROM users WHERE email = $1`,
-            [currentUserEmail]
+            `SELECT gender, showtouser FROM users WHERE user_id = $1`,
+            [currentUserId]
         );
 
         if (currentUserResult.rows.length === 0) {
@@ -48,25 +50,33 @@ export async function GET(req: Request) {
         console.log(currentUser)
         const { gender: currentUserGender, showtouser } = currentUser;
 
-        console.log('Current User Email:', currentUserEmail);
+        console.log('Current User ID:', currentUserId);
         console.log('Current User Gender:', currentUserGender);
         console.log('Show To User:', showtouser);
 
         // Adjust query to fetch filtered users based on current user's preferences
         const query = `
             SELECT
-                u.user_id AS id, u.name, u.photo, u.gender, u.showuserprofileto,
-                q.id AS question_id, q.question_text AS question, q.correct_answer,
-                o.id AS option_id, o.option_text AS option
-            FROM users u
-            INNER JOIN questions q ON u.user_id = q.user_id
-            INNER JOIN options o ON q.id = o.question_id
-            WHERE u.email != $1 and u.showuserprofileto = $2 and u.gender = $3
+    u.user_id AS id, u.name, u.photo, u.gender, u.showuserprofileto,
+    q.id AS question_id, q.question_text AS question, q.correct_answer,
+    o.id AS option_id, o.option_text AS option
+FROM users u
+INNER JOIN questions q ON u.user_id = q.user_id
+INNER JOIN options o ON q.id = o.question_id
+WHERE u.user_id != $1
+  AND u.showuserprofileto = $2
+  AND u.gender = $3
+  AND u.user_id NOT IN (
+      SELECT liked_id FROM likes WHERE liker_id = $1
+      UNION
+      SELECT disliked_id FROM dislikes WHERE disliker_id = $1
+  );
+
             
         `;
 
         // Execute query with parameters
-        const result = await pool.query(query, [currentUserEmail, currentUserGender, showtouser]);
+        const result = await pool.query(query, [currentUserId, currentUserGender, showtouser]);
 
         // Group data by user
         const users = result.rows.reduce<User[]>((acc, row) => {

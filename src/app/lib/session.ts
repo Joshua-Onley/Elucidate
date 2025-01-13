@@ -71,6 +71,7 @@ export async function createSession(userId: number) {
       // Return the payload containing userId and other data
       return payload;
     } catch (error) {
+        console.error(error)
       throw new Error('Invalid or expired session token');
     }
   }

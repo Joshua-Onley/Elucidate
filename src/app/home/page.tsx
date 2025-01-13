@@ -41,7 +41,6 @@ export default function HomePage() {
       try {
         const response = await fetch('/api/users/fetchCurrentUser'); // Assuming this returns an object like { id: number }
         const data = await response.json()
-        console.log(data)
         setCurrentUser({ id: data.userId as number }); // Set the state as an object with `id` field
       } catch (error) {
         console.error("Error fetching user from session", error);
@@ -62,11 +61,18 @@ export default function HomePage() {
         return;
       }
 
+      if (!currentUser) {
+        console.error('Current user is not set');
+        return;
+      }
+  
+
       try {
         const response = await fetch('/api/users/fetchUsers', {
           method: 'GET',
           headers: {
-            'Authorization': email // Send current user's email in the Authorization header
+          'Authorization': `Bearer ${currentUser.id}`, // Assuming you use the user's ID as a token
+          'Content-Type': 'application/json',
           }
         })
         const data = await response.json()
@@ -76,12 +82,21 @@ export default function HomePage() {
         console.error('Failed to fetch users:', error)
       }
     }
-    fetchUsers()
-  }, [])
+    if (currentUser) {
+      fetchUsers()
+    }
+    
+  }, [currentUser])
 
   const moveToNextUser = () => {
-    setCurrentUserIndex((prevIndex) => (prevIndex + 1) % users.length)
-  }
+    setUsers((prevUsers) => {
+      // Remove the current user by filtering them out
+      const updatedUsers = prevUsers.filter((_, index) => index !== currentUserIndex);
+      // Reset the index to 0 if there are no more users left; otherwise, keep it valid
+      setCurrentUserIndex((prevIndex) => (updatedUsers.length > 0 ? prevIndex % updatedUsers.length : 0));
+      return updatedUsers;
+    });
+  };
 
     return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8 flex flex-col items-center justify-center">
