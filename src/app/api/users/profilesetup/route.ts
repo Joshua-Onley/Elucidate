@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db';
-import { createSession } from '@/app/lib/session';
+
 
 interface RequestBody {
+    id: number;
     name: string;
     photo: string;
     email: string;
@@ -18,12 +19,12 @@ interface RequestBody {
 }
 
 export async function POST(req: Request) {
-    const { name, photo, email, age, gender, showUserProfileTo, showToUser, questions }: RequestBody = await req.json();
+    const { id, name, photo, age, gender, showUserProfileTo, showToUser, questions }: RequestBody = await req.json();
 
     // Validate required fields
-    if (!name || !photo || !email || !age || !gender || !showUserProfileTo || !showToUser || !questions || !Array.isArray(questions)) {
+    if (!name || !photo || !age || !gender || !showUserProfileTo || !showToUser || !questions || !Array.isArray(questions)) {
         return NextResponse.json(
-            { message: 'Name, photo, email, age, gender, preferences, and questions are required' },
+            { message: 'Name, photo, age, gender, preferences, and questions are required' },
             { status: 400 }
         );
     }
@@ -33,8 +34,8 @@ export async function POST(req: Request) {
 
         // Check if the user already exists by email
         const userResult = await pool.query(
-            `SELECT user_id FROM users WHERE email = $1`,
-            [email]
+            `SELECT user_id FROM users WHERE user_id = $1`,
+            [id]
         );
 
         if (userResult.rows.length === 0) {
@@ -44,8 +45,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // Get the user_id from the existing user
-        const userId = userResult.rows[0].user_id;
 
         // Update the user's name, photo, age, gender, and preferences
         await pool.query(
@@ -60,7 +59,7 @@ export async function POST(req: Request) {
                 gender,
                 showUserProfileTo,
                 showToUser,
-                userId,
+                id,
             ]
         );
 
@@ -72,7 +71,7 @@ export async function POST(req: Request) {
                 `INSERT INTO questions (user_id, question_text, correct_answer)
                  VALUES ($1, $2, $3)
                  RETURNING id`,
-                [userId, questionText, correctAnswer]
+                [id, questionText, correctAnswer]
             );
 
             const questionId = questionResult.rows[0].id;
@@ -89,7 +88,6 @@ export async function POST(req: Request) {
 
         await pool.query('COMMIT');
 
-        await createSession(userId); // Assuming userId is sufficient to create the session
 
         return NextResponse.json({ message: 'Profile updated and questions added successfully' });
     } catch (err) {

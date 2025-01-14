@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import pool from '../../../lib/db';
+import { createSession } from '@/app/lib/session';
 
 interface RequestBody {
   email: string;
@@ -28,6 +29,8 @@ export async function POST(req: Request) {
         if (!isPasswordValid) {
             return NextResponse.json({ message: 'invalid email or password'}, { status: 401 });
         }
+
+        await createSession(user.user_id);
 
         return NextResponse.json({ message: 'Login successful', user: { email: user.email } });
 

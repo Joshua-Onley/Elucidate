@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db';
 
 interface RequestBody {
-    likerEmail: string;
+    likerId: number;
     likedId: number;
 }
 
@@ -11,17 +11,17 @@ export async function POST(req: Request) {
 
     
         try {
-            const { likerEmail, likedId }: RequestBody = await req.json()
-            console.log(likerEmail, likedId)
-            if (!likerEmail || !likedId) {
-                console.error("missing a user email/id in the request body")
+            const { likerId, likedId }: RequestBody = await req.json()
+            console.log(likerId, likedId)
+            if (!likerId || !likedId) {
+                console.error("missing a user id in the request body")
                 return NextResponse.json({ error: "missing email addresss"}, { status: 400 })
             }
 
-            const likerQuery = 'SELECT user_id FROM users WHERE email = $1';
+            const likerQuery = 'SELECT user_id FROM users WHERE user_id = $1';
             
 
-            const likerResult = await pool.query(likerQuery, [likerEmail])
+            const likerResult = await pool.query(likerQuery, [likerId])
             
 
             if (likerResult.rows.length === 0) {

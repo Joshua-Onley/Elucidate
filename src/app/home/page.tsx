@@ -1,11 +1,10 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ThumbsUp, ThumbsDown } from 'lucide-react'
-
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ThumbsUp, ThumbsDown } from 'lucide-react';
 
 export interface Option {
   id: number;
@@ -31,74 +30,65 @@ export interface CurrentUser {
 }
 
 export default function HomePage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [currentUserIndex, setCurrentUserIndex] = useState(0)
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch the current user
   useEffect(() => {
-    // Fetch the current user from the session
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/users/fetchCurrentUser'); // Assuming this returns an object like { id: number }
-        const data = await response.json()
-        setCurrentUser({ id: data.userId as number }); // Set the state as an object with `id` field
+        const response = await fetch('/api/users/fetchCurrentUser');
+        const data = await response.json();
+        setCurrentUser({ id: data.userId as number });
       } catch (error) {
-        console.error("Error fetching user from session", error);
+        console.error('Error fetching user from session:', error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
     fetchUser();
   }, []);
 
+  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
-      // Get email from URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const email = urlParams.get('email'); // Assuming the URL has the format /home?email=user@example.com
-
-      if (!email) {
-        console.error('Email not found in URL');
-        return;
-      }
-
-      if (!currentUser) {
-        console.error('Current user is not set');
-        return;
-      }
-  
+      if (!currentUser) return;
 
       try {
         const response = await fetch('/api/users/fetchUsers', {
           method: 'GET',
           headers: {
-          'Authorization': `Bearer ${currentUser.id}`, // Assuming you use the user's ID as a token
-          'Content-Type': 'application/json',
-          }
-        })
-        const data = await response.json()
-        console.log('Fetched Users:', data);
-        setUsers(data)
+            Authorization: `Bearer ${currentUser.id}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        setUsers(data);
       } catch (error) {
-        console.error('Failed to fetch users:', error)
+        console.error('Failed to fetch users:', error);
       }
-    }
-    if (currentUser) {
-      fetchUsers()
-    }
-    
-  }, [currentUser])
+    };
 
+    if (currentUser) fetchUsers();
+  }, [currentUser]);
+
+  // Remove current user and move to next
   const moveToNextUser = () => {
     setUsers((prevUsers) => {
-      // Remove the current user by filtering them out
       const updatedUsers = prevUsers.filter((_, index) => index !== currentUserIndex);
-      // Reset the index to 0 if there are no more users left; otherwise, keep it valid
       setCurrentUserIndex((prevIndex) => (updatedUsers.length > 0 ? prevIndex % updatedUsers.length : 0));
       return updatedUsers;
     });
   };
 
-    return (
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8 flex flex-col items-center justify-center">
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-white">Elucidate</h1>
@@ -106,117 +96,84 @@ export default function HomePage() {
       </header>
       <div className="w-full max-w-md">
         {users.length > 0 && (
-          <UserCard key={users[currentUserIndex].id} user={users[currentUserIndex]} onComplete={moveToNextUser} />
+          <UserCard
+            key={users[currentUserIndex].id}
+            user={users[currentUserIndex]}
+            onComplete={moveToNextUser}
+            currentUser={currentUser}
+          />
         )}
       </div>
     </div>
-  )
+  );
+}
 
-function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answeredQuestions, setAnsweredQuestions] = useState(0)
-  const [attempts, setAttempts] = useState(0)
-  const [shuffledOptions, setShuffledOptions] = useState<Option[]>([])
-  const [showRatingButtons, setShowRatingButtons] = useState(false)
-  const [ratingAnimation, setRatingAnimation] = useState<'like' | 'dislike' | null>(null)
+function UserCard({
+  user,
+  onComplete,
+  currentUser,
+}: {
+  user: User;
+  onComplete: () => void;
+  currentUser: CurrentUser | null;
+}) {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState(0);
+  const [attempts, setAttempts] = useState(0);
+  const [shuffledOptions, setShuffledOptions] = useState<Option[]>([]);
+  const [showRatingButtons, setShowRatingButtons] = useState(false);
+  const [ratingAnimation, setRatingAnimation] = useState<'like' | 'dislike' | null>(null);
 
-  const shuffleOptions = (options: Option[]) => {
-    const shuffledOptions = [...options];
-    for (let i = shuffledOptions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
-    }
-    return shuffledOptions;
-  };
-
+  // Shuffle options for the current question
   useEffect(() => {
+    const shuffleOptions = (options: Option[]) => {
+      const shuffled = [...options];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+
     const currentQuestion = user.questions[currentQuestionIndex];
     setShuffledOptions(shuffleOptions(currentQuestion.options));
   }, [currentQuestionIndex, user.questions]);
+
+  // Update state when all attempts are used
+  useEffect(() => {
+    if (attempts >= 3) setShowRatingButtons(true);
+  }, [attempts]);
 
   const handleAnswer = (selectedOption: Option) => {
     if (attempts >= 3) return;
 
     const currentQuestion = user.questions[currentQuestionIndex];
-
     if (selectedOption.option === currentQuestion.correctAnswer) {
       setAnsweredQuestions((prev) => Math.min(prev + 1, 3));
     }
-
     setCurrentQuestionIndex((prev) => (prev + 1) % user.questions.length);
     setAttempts((prev) => prev + 1);
   };
 
-  const blurAmount = answeredQuestions === 3 ? 0 : Math.max(0, 20 - answeredQuestions * 6);
-
-  useEffect(() => {
-    if (attempts >= 3) {
-      setShowRatingButtons(true);
-    }
-  }, [attempts]);
-
   const handleRating = async (rating: 'like' | 'dislike') => {
     setRatingAnimation(rating);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const likerEmail = urlParams.get('email')
-
-    if (!likerEmail) {
-      console.error("liker email not found in the url");
-      return;
+    try {
+      await fetch(`/api/users/${rating}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ likerId: currentUser?.id, likedId: user.id }),
+      });
+    } catch (error) {
+      console.error(`Error recording ${rating}:`, error);
+    } finally {
+      setTimeout(() => {
+        setRatingAnimation(null);
+        onComplete();
+      }, 1000);
     }
-
-    const likedId = user.id;
-    console.log('likerEmail:', likerEmail, 'likedId:', likedId); // Debugging
-
-    if (rating == 'like') {
-      try {
-        const response = await fetch('/api/users/like', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            likerEmail,
-            likedId,
-          }),
-        });
-        if (!response.ok) {
-          throw new Error('Failed to record like/dislike');
-        }
-        console.log("Rating successfully recorded:", await response.json());
-      } catch (error) {
-        console.error("Error recording rating:", error);
-      }
-    } else {
-      // Ensure the correct API route is used for dislikes
-      try {
-        const response = await fetch('/api/users/dislike', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            likerEmail,
-            likedId,
-          }),
-        });
-        if (!response.ok) {
-          throw new Error('Failed to record dislike');
-        }
-        console.log("Dislike successfully recorded:", await response.json());
-      } catch (error) {
-        console.error("Error recording dislike:", error);
-      }
-    }
-
-    setTimeout(() => {
-      setRatingAnimation(null);
-      onComplete();
-    }, 1000);
   };
 
-  const currentQuestion = user.questions[currentQuestionIndex];
+  const blurAmount = answeredQuestions === 3 ? 0 : 20 - answeredQuestions * 6;
 
   return (
     <motion.div
@@ -234,11 +191,10 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
           />
         )}
         <CardHeader className="relative h-96 mb-4">
-          <div className="absolute inset-0 bg-cover bg-center" style={{
-            backgroundImage: `url(${user.photo})`,
-            filter: `blur(${blurAmount}px)`,
-            transform: 'scale(1.1)'
-          }} />
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${user.photo})`, filter: `blur(${blurAmount}px)` }}
+          />
           <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 px-2 py-1 rounded">
             <p className="text-white font-semibold">{user.name}</p>
           </div>
@@ -253,9 +209,9 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <p className="font-semibold mb-2">{currentQuestion.question}</p>
+                <p className="font-semibold mb-2">{user.questions[currentQuestionIndex].question}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {shuffledOptions.map((option: Option) => (
+                  {shuffledOptions.map((option) => (
                     <Button
                       key={option.id}
                       variant="outline"
@@ -296,13 +252,11 @@ function UserCard({ user, onComplete }: { user: User, onComplete: () => void }) 
         <CardFooter className="bg-gray-100 p-4">
           <p className="text-sm text-gray-600">
             {showRatingButtons
-              ? "Rate this profile!"
-              : `Answer correctly to unblur the photo! (${answeredQuestions}/3)`
-            }
+              ? 'Rate this profile!'
+              : `Answer correctly to unblur the photo! (${answeredQuestions}/3)`}
           </p>
         </CardFooter>
       </Card>
     </motion.div>
   );
-}
 }

@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Sparkles } from 'lucide-react';
 import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
 
 interface FormValues {
     name: string;
@@ -17,44 +18,52 @@ interface FormValues {
     gender: "male" | "female";
     showUserProfileTo: "male" | "female";
     showToUser: "male" | "female";
-    email: string | null;
     questions: Array<{
       question: string;
       options: string[];
       correctAnswer: string;
     }>;
   }
+
+  interface CurrentUser {
+    id: number;
+  }
   
 
 export default function ProfileSetup() {
     const router = useRouter();
-
- const searchParams = useSearchParams();
-  const emailFromQuery = searchParams.get('email');
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState<FormValues>({
-    name: '',
-    age: 18, // Default age
-    gender: "male", // Default gender
-    showUserProfileTo: "male", // Default preference
-    showToUser: "male", // Default preference
-    email: emailFromQuery,
-    questions: Array(3).fill(null).map(() => ({
-      question: '',
-      options: ['', '', '', ''],
-      correctAnswer: '0',
+    const [photo, setPhoto] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [formValues, setFormValues] = useState<FormValues>({
+      name: '',
+      age: 18, // Default age
+      gender: "male", // Default gender
+      showUserProfileTo: "male", // Default preference
+      showToUser: "male", // Default preference
+      questions: Array(3).fill(null).map(() => ({
+        question: '',
+        options: ['', '', '', ''],
+        correctAnswer: '0',
     })),
   });
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
   useEffect(() => {
-    if (emailFromQuery) {
-      setFormValues((prev) => ({ ...prev, email: emailFromQuery }));
-    }
-  }, [emailFromQuery]);
+      // Fetch the current user from the session
+      const fetchUser = async () => {
+        try {
+          const response = await fetch('/api/users/fetchCurrentUser'); // Assuming this returns an object like { id: number }
+          const data = await response.json()
+          setCurrentUser({ id: data.userId as number }); // Set the state as an object with `id` field
+        } catch (error) {
+          console.error("Error fetching user from session", error);
+        }
+      }
+  
+      fetchUser();
+    }, []);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -96,12 +105,12 @@ export default function ProfileSetup() {
       const response = await fetch('/api/users/profilesetup', {
         method: 'POST',
         body: JSON.stringify({
+          id: currentUser.id,
           name: formValues.name,
           age: formValues.age,
           gender: formValues.gender,
           showUserProfileTo: formValues.showUserProfileTo,
           showToUser: formValues.showToUser,
-          email: formValues.email,
           photo: photo?.name || '',
           questions: formValues.questions,
         }),
@@ -117,7 +126,7 @@ export default function ProfileSetup() {
       }
   
       alert('Profile setup successful!');
-      router.push(`/home?email=${encodeURIComponent(formValues.email || '')}`);
+      router.push(`/home`);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || 'An unknown error occurred');
@@ -221,17 +230,6 @@ export default function ProfileSetup() {
 </div>
 
 
-
-
-            <div className="space-y-2">
-              
-              <Input
-                    id="email"
-                    type="hidden"
-                    value={formValues.email || ''}
-/>
-            </div>
-
             {formValues.questions.map((_, index) => (
               <div key={index} className="space-y-2 p-4 bg-purple-50 rounded-lg">
                 <Label htmlFor={`question${index}`} className="text-lg font-medium text-gray-700">Question {index + 1}</Label>
@@ -258,7 +256,7 @@ export default function ProfileSetup() {
 
             {error && <p className="text-red-500">{error}</p>}
 
-            <Button type="submit" disabled={loading || !formValues.name || !formValues.email || !photo} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+            <Button type="submit" disabled={loading || !formValues.name || !photo} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
               <Sparkles className="w-5 h-5 mr-2" />
               {loading ? 'Saving...' : 'Create Your Elucidate Profile'}
             </Button>
