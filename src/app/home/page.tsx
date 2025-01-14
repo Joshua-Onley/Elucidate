@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 
+
 export interface Option {
   id: number;
   option: string;
@@ -34,6 +35,7 @@ export default function HomePage() {
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
+
 
   // Fetch the current user
   useEffect(() => {
@@ -93,6 +95,7 @@ export default function HomePage() {
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-white">Elucidate</h1>
         <p className="text-xl text-white mt-2">Unblur your perfect match</p>
+        
       </header>
       <div className="w-full max-w-md">
         {users.length > 0 && (
