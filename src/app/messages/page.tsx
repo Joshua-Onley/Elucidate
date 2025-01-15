@@ -106,29 +106,61 @@ export default function MessagesPage() {
     fetchConversations()
   }, [currentUserId])
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim() && selectedConversation) {
-      const updatedConversation = {
-        ...selectedConversation,
-        messages: [
-          ...selectedConversation.messages,
-          {
-            id: Date.now().toString(),
-            senderId: currentUserId,
-            senderName: 'You',
-            senderAvatar: '/placeholder.svg?height=40&width=40',
-            content: newMessage,
-            timestamp: new Date().toISOString(),
-          }
-        ]
+      const newMessageData = {
+        senderId: currentUserId,
+        receiverId: selectedConversation.id, // assuming the `id` of selectedConversation is the receiver
+        messageText: newMessage,
+        createdAt: new Date().toISOString(),
+      };
+  
+      try {
+        // Send the message to the backend
+        const response = await fetch('/api/messages/sendMessage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newMessageData),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to send message');
+        }
+  
+        // Get the new message from the backend (you can include the ID or any other fields from the database)
+        const insertedMessage = await response.json();
+  
+        // Update the conversation with the new message
+        const updatedConversation = {
+          ...selectedConversation,
+          messages: [
+            ...selectedConversation.messages,
+            {
+              id: insertedMessage.id, // Use the ID returned by the backend
+              senderId: currentUserId,
+              senderName: 'You',
+              senderAvatar: '/placeholder.svg?height=40&width=40',
+              content: newMessage,
+              timestamp: insertedMessage.createdAt, // Use the timestamp from the backend
+            }
+          ]
+        };
+  
+        // Update the conversations state
+        setSelectedConversation(updatedConversation);
+        setConversations(conversations.map(conv => 
+          conv.id === updatedConversation.id ? updatedConversation : conv
+        ));
+        setNewMessage(''); // Clear the input field
+  
+      } catch (error) {
+        console.error('Error sending message:', error);
       }
-      setSelectedConversation(updatedConversation)
-      setConversations(conversations.map(conv => 
-        conv.id === updatedConversation.id ? updatedConversation : conv
-      ))
-      setNewMessage('')
     }
-  }
+  };
+  
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">Loading messages...</div>
