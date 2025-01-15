@@ -18,23 +18,38 @@ export async function GET(req: Request) {
 
     // Database query
     const result = await pool.query(
-      `SELECT DISTINCT 
-          CASE
-              WHEN m.sender_id = $1 THEN m.receiver_id
-              ELSE m.sender_id
-          END AS participant_id,
-          u.name AS participant_name,
-          u.photo AS participant_avatar,
-          m.message_text AS last_message,
-          m.created_at AS last_message_time
-      FROM messages m
-      JOIN users u ON u.user_id = 
-          CASE 
-              WHEN m.sender_id = $1 THEN m.receiver_id
-              ELSE m.sender_id
-          END
-      WHERE (m.sender_id = $1 OR m.receiver_id = $1)
-      ORDER BY m.created_at DESC;`,
+      `WITH ConversationMessages AS (
+    SELECT 
+    m.message_id AS message_id,
+        CASE
+            WHEN m.sender_id = $1 THEN m.receiver_id
+            ELSE m.sender_id
+        END AS participant_id,
+        m.sender_id,
+        m.receiver_id,
+        m.message_text,
+        m.created_at
+    FROM messages m
+    WHERE m.sender_id = $1 OR m.receiver_id = $1
+)
+SELECT 
+    cm.participant_id,
+    u.name AS participant_name,
+    u.photo AS participant_avatar,
+    JSON_AGG(
+        JSON_BUILD_OBJECT(
+            'id', cm.message_id,
+            'sender_id', cm.sender_id,
+            'receiver_id', cm.receiver_id,
+            'message_text', cm.message_text,
+            'created_at', cm.created_at
+        ) ORDER BY cm.created_at
+    ) AS messages
+FROM ConversationMessages cm
+JOIN users u ON u.user_id = cm.participant_id
+GROUP BY cm.participant_id, u.name, u.photo
+ORDER BY MAX(cm.created_at) DESC;
+`,
       [userId]
     );
 

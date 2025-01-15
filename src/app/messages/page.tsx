@@ -10,7 +10,7 @@ import { Send, MessageSquare } from 'lucide-react'
 
 interface Message {
   id: number
-  senderId: string
+  senderId: number
   senderName: string
   senderAvatar: string
   content: string
@@ -23,6 +23,20 @@ interface Conversation {
   participantAvatar: string
   messages: Message[]
 }
+
+interface ApiConversation {
+  participant_id: number;
+  participant_name: string | null;
+  participant_avatar: string | null;
+  messages: {
+    id: number;
+    sender_id: number;
+    receiver_id: number;
+    message_text: string;
+    created_at: string;
+  }[];
+}
+
 
 
 export default function MessagesPage() {
@@ -58,21 +72,36 @@ export default function MessagesPage() {
     }
 
     const fetchConversations = async () => {
-        try {
-            const response = await fetch(`/api/messages/getConversations?userId=${currentUserId}`);
-            if (!response.ok) {
-                throw new Error('failed to find conversations')
-            }
-            const data = await response.json();
-            setConversations(data);
-
-        } catch (error) {
-            console.error('error fetching conversations', error)
-
-        } finally {
-            setLoading(false);
-        }
-    }
+      try {
+        const response = await fetch(`/api/messages/getConversations?userId=${currentUserId}`);
+        if (!response.ok) throw new Error('Failed to fetch conversations');
+    
+        const data: ApiConversation[] = await response.json();
+    
+        const transformedData = data.map(conversation => ({
+          id: conversation.participant_id,
+          participantName: conversation.participant_name || 'Unknown User', // Fallback to 'Unknown User' if null or undefined
+          participantAvatar: conversation.participant_avatar || '/default-avatar.jpg', // Fallback to default avatar
+          messages: conversation.messages.map(message => ({
+            id: message.id,
+            senderId: message.sender_id,
+            content: message.message_text,
+            timestamp: message.created_at,
+            senderName: message.sender_id === currentUserId ? 'You' : conversation.participant_name || 'Unknown User', // Ensure senderName fallback
+            senderAvatar: message.sender_id === currentUserId
+              ? '/placeholder.svg?height=40&width=40'
+              : conversation.participant_avatar || '/default-avatar.jpg',
+          })),
+        }));
+        
+        setConversations(transformedData);
+        
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchConversations()
   }, [currentUserId])
@@ -85,7 +114,7 @@ export default function MessagesPage() {
           ...selectedConversation.messages,
           {
             id: Date.now().toString(),
-            senderId: '2',
+            senderId: currentUserId,
             senderName: 'You',
             senderAvatar: '/placeholder.svg?height=40&width=40',
             content: newMessage,
@@ -146,19 +175,23 @@ export default function MessagesPage() {
                   <h2 className="text-xl font-semibold text-gray-900">{selectedConversation.participantName}</h2>
                 </div>
                 <ScrollArea className="flex-1 p-4">
-                  {selectedConversation.messages.map(message => (
-                    <div key={message.id} className={`flex mb-4 ${message.senderId === '2' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`flex items-end ${message.senderId === '2' ? 'flex-row-reverse' : ''}`}>
-                        <Avatar className="h-8 w-8 mx-2">
-                          <AvatarImage src={message.senderAvatar} alt={message.senderName} />
-                          <AvatarFallback>{message.senderName[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className={`px-4 py-2 rounded-lg ${message.senderId === '2' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-900'}`}>
-                          {message.content}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                {selectedConversation.messages.map((message, index) => (
+  <div
+    key={`${message.id}-${message.senderId}`}  // Create a unique key using both message.id and senderId
+    className={`flex mb-4 ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
+  >
+    <div className={`flex items-end ${message.senderId === currentUserId ? 'flex-row-reverse' : ''}`}>
+      <Avatar className="h-8 w-8 mx-2">
+        <AvatarImage src={message.senderAvatar} alt={message.senderName} />
+        <AvatarFallback>{message.senderName[0]}</AvatarFallback>
+      </Avatar>
+      <div className={`px-4 py-2 rounded-lg ${message.senderId === currentUserId ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-900'}`}>
+        {message.content}
+      </div>
+    </div>
+  </div>
+))}
+
                 </ScrollArea>
                 <div className="p-4 bg-purple-100 rounded-b-lg">
                   <div className="flex">
