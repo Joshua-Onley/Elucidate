@@ -134,12 +134,14 @@ export default function MessagesPage() {
   
         // Update the conversation with the new message
         const updatedConversation = {
-          ...selectedConversation,
+          id: selectedConversation.id,
+          participantName: selectedConversation.participantName,
+          participantAvatar: selectedConversation.participantAvatar,
           messages: [
             ...selectedConversation.messages,
             {
               id: insertedMessage.id, // Use the ID returned by the backend
-              senderId: currentUserId,
+              senderId: currentUserId || 0,
               senderName: 'You',
               senderAvatar: '/placeholder.svg?height=40&width=40',
               content: newMessage,
@@ -149,7 +151,7 @@ export default function MessagesPage() {
         };
   
         // Update the conversations state
-        setSelectedConversation(updatedConversation);
+        setSelectedConversation(updatedConversation as Conversation);
         setConversations(conversations.map(conv => 
           conv.id === updatedConversation.id ? updatedConversation : conv
         ));
@@ -207,7 +209,7 @@ export default function MessagesPage() {
                   <h2 className="text-xl font-semibold text-gray-900">{selectedConversation.participantName}</h2>
                 </div>
                 <ScrollArea className="flex-1 p-4">
-                {selectedConversation.messages.map((message, index) => (
+                {selectedConversation.messages.map((message) => (
   <div
     key={`${message.id}-${message.senderId}`}  // Create a unique key using both message.id and senderId
     className={`flex mb-4 ${message.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
