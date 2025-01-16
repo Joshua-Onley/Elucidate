@@ -4,8 +4,8 @@ import pool from '@/app/lib/db';
 export async function GET(req: Request) {
   try {
     // Parse the URL to extract query parameters
-    const url = new URL(req.url || '', 'http://localhost'); // Base URL needed for parsing
-    const userId = url.searchParams.get('userId'); // Extract userId from query string
+    const url = new URL(req.url || '', 'http://localhost');
+    const userId = url.searchParams.get('userId');
 
 
     if (!userId) {

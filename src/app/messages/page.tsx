@@ -73,33 +73,44 @@ export default function MessagesPage() {
 
     const fetchConversations = async () => {
       try {
-        const response = await fetch(`/api/messages/getConversations?userId=${currentUserId}`);
-        if (!response.ok) throw new Error('Failed to fetch conversations');
-    
-        const data: ApiConversation[] = await response.json();
-    
-        const transformedData = data.map(conversation => ({
-          id: conversation.participant_id,
-          participantName: conversation.participant_name || 'Unknown User', // Fallback to 'Unknown User' if null or undefined
-          participantAvatar: conversation.participant_avatar || '/default-avatar.jpg', // Fallback to default avatar
-          messages: conversation.messages.map(message => ({
-            id: message.id,
-            senderId: message.sender_id,
-            content: message.message_text,
-            timestamp: message.created_at,
-            senderName: message.sender_id === currentUserId ? 'You' : conversation.participant_name || 'Unknown User', // Ensure senderName fallback
-            senderAvatar: message.sender_id === currentUserId
-              ? '/placeholder.svg?height=40&width=40'
-              : conversation.participant_avatar || '/default-avatar.jpg',
-          })),
-        }));
-        
-        setConversations(transformedData);
-        
+          // Fetch conversations and current user's avatar in parallel
+          const [conversationsResponse, senderAvatarResponse] = await Promise.all([
+              fetch(`/api/messages/getConversations?userId=${currentUserId}`),
+              fetch(`/api/messages/getUserAvatar?userId=${currentUserId}`)
+          ]);
+  
+          if (!conversationsResponse.ok) throw new Error('Failed to fetch conversations');
+          if (!senderAvatarResponse.ok) throw new Error('Failed to fetch user avatar');
+  
+          // Get the sender avatar URL from the response
+          const senderAvatarData = await senderAvatarResponse.json();
+          const currentUserAvatar = senderAvatarData.photo || '/default-avatar.jpg';  // Fallback to default if no photo
+  
+          const data: ApiConversation[] = await conversationsResponse.json();
+  
+          // Transform the data to include the correct sender's avatar
+          const transformedData = data.map(conversation => ({
+              id: conversation.participant_id,
+              participantName: conversation.participant_name || 'Unknown User', // Fallback to 'Unknown User' if null or undefined
+              participantAvatar: conversation.participant_avatar || '/default-avatar.jpg', // Fallback to default avatar
+              messages: conversation.messages.map(message => ({
+                  id: message.id,
+                  senderId: message.sender_id,
+                  content: message.message_text,
+                  timestamp: message.created_at,
+                  senderName: message.sender_id === currentUserId ? 'You' : conversation.participant_name || 'Unknown User', // Ensure senderName fallback
+                  senderAvatar: message.sender_id === currentUserId
+                      ? currentUserAvatar  // Use the fetched avatar for the current user
+                      : conversation.participant_avatar || '/default-avatar.jpg', // Use participant avatar for others
+              })),
+          }));
+  
+          setConversations(transformedData);
+  
       } catch (error) {
-        console.error('Error fetching conversations:', error);
+          console.error('Error fetching conversations:', error);
       } finally {
-        setLoading(false);
+          setLoading(false);
       }
     };
 

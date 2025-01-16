@@ -1,30 +1,37 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db';
-
-
-interface RequestBody {
-    id: number;
-    name: string;
-    photo: string;
-    email: string;
-    age: number;
-    gender: 'male' | 'female';
-    showUserProfileTo: 'men' | 'women';
-    showToUser: 'men' | 'women';
-    questions: Array<{
-        question: string;
-        options: string[];
-        correctAnswer: string;
-    }>;
-}
+import fs from 'fs';  // If saving files locally, or use a cloud storage API if necessary
+import path from 'path';
 
 export async function POST(req: Request) {
-    const { id, name, photo, age, gender, showUserProfileTo, showToUser, questions }: RequestBody = await req.json();
+    // Parse form data
+    const formData = await req.formData();
+    
+    const id = formData.get('id') as string;
+    const name = formData.get('name') as string;
+    const age = formData.get('age') as string;
+    const gender = formData.get('gender') as string;
+    const showUserProfileTo = formData.get('showUserProfileTo') as string;
+    const showToUser = formData.get('showToUser') as string;
+    const questionsJson = formData.get('questions') as string;
+    
+    const photo = formData.get('file') as File;
 
     // Validate required fields
-    if (!name || !photo || !age || !gender || !showUserProfileTo || !showToUser || !questions || !Array.isArray(questions)) {
+    if (!id || !name || !photo || !age || !gender || !showUserProfileTo || !showToUser || !questionsJson) {
         return NextResponse.json(
             { message: 'Name, photo, age, gender, preferences, and questions are required' },
+            { status: 400 }
+        );
+    }
+
+    let questions;
+    try {
+        questions = JSON.parse(questionsJson);
+    } catch (err) {
+        console.error(err)
+        return NextResponse.json(
+            { message: 'Invalid questions format' },
             { status: 400 }
         );
     }
@@ -32,7 +39,7 @@ export async function POST(req: Request) {
     try {
         await pool.query('BEGIN');
 
-        // Check if the user already exists by email
+        // Check if the user exists by ID
         const userResult = await pool.query(
             `SELECT user_id FROM users WHERE user_id = $1`,
             [id]
@@ -45,8 +52,23 @@ export async function POST(req: Request) {
             );
         }
 
+        // Save the file (this is just an example, adapt as necessary)
+        const uploadDir = path.join(process.cwd(), './public');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
 
-        // Update the user's name, photo, age, gender, and preferences
+        // Save the photo and generate a relative URL
+        const photoName = Date.now() + '-' + photo.name; // Ensure a unique name
+        const photoPath = path.join(uploadDir, photoName);
+
+        // Write the file to the disk
+        await fs.promises.writeFile(photoPath, Buffer.from(await photo.arrayBuffer()));
+
+        // Store the relative URL of the photo
+        const relativePhotoUrl = `${photoName}`;
+
+        // Update user profile with the relative photo URL
         await pool.query(
             `UPDATE users 
              SET name = $1, photo = $2, age = $3, gender = $4, 
@@ -54,12 +76,12 @@ export async function POST(req: Request) {
              WHERE user_id = $7`,
             [
                 name,
-                photo,
-                age,
+                relativePhotoUrl, // Store the relative URL of the photo
+                parseInt(age), // Convert age to number
                 gender,
                 showUserProfileTo,
                 showToUser,
-                id,
+                parseInt(id), // Convert id to number
             ]
         );
 
@@ -87,7 +109,6 @@ export async function POST(req: Request) {
         }
 
         await pool.query('COMMIT');
-
 
         return NextResponse.json({ message: 'Profile updated and questions added successfully' });
     } catch (err) {

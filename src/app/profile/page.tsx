@@ -49,6 +49,7 @@ export default function ProfileSetup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [file, setFile] = useState<File>();
 
   useEffect(() => {
       // Fetch the current user from the session
@@ -68,6 +69,7 @@ export default function ProfileSetup() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setPhoto(e.target.files[0]);
+      setFile(e.target.files[0]);
       setPhotoPreview(URL.createObjectURL(e.target.files[0]));
     }
   };
@@ -101,6 +103,8 @@ export default function ProfileSetup() {
     setLoading(true);
     setError(null);
   
+    if (!file) return;
+  
     if (!currentUser) {
       setError('User is not logged in.');
       setLoading(false);
@@ -108,21 +112,25 @@ export default function ProfileSetup() {
     }
   
     try {
+      const formData = new FormData();
+      
+      // Add file to FormData
+      formData.append('file', file);
+      
+      // Add other fields to FormData
+      formData.append('id', currentUser.id.toString());
+      formData.append('name', formValues.name);
+      formData.append('age', formValues.age.toString());
+      formData.append('gender', formValues.gender);
+      formData.append('showUserProfileTo', formValues.showUserProfileTo);
+      formData.append('showToUser', formValues.showToUser);
+      
+      // Add questions (assuming you want to send them as JSON)
+      formData.append('questions', JSON.stringify(formValues.questions));
+  
       const response = await fetch('/api/users/profilesetup', {
         method: 'POST',
-        body: JSON.stringify({
-          id: currentUser.id,
-          name: formValues.name,
-          age: formValues.age,
-          gender: formValues.gender,
-          showUserProfileTo: formValues.showUserProfileTo,
-          showToUser: formValues.showToUser,
-          photo: photo?.name || '',
-          questions: formValues.questions,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: formData, // Send FormData as the body
       });
   
       const result = await response.json();
