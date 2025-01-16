@@ -7,7 +7,6 @@ export async function GET(req: Request) {
     const url = new URL(req.url || '', 'http://localhost'); // Base URL needed for parsing
     const userId = url.searchParams.get('userId'); // Extract userId from query string
 
-    console.log('Received userId:', userId);
 
     if (!userId) {
       return new Response(

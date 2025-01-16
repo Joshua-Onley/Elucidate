@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     
         try {
             const { likerId, likedId }: RequestBody = await req.json()
-            console.log(likerId, likedId)
+            
             if (!likerId || !likedId) {
                 console.error("missing a user id in the request body")
                 return NextResponse.json({ error: "missing email addresss"}, { status: 400 })

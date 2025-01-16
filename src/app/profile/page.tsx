@@ -101,6 +101,12 @@ export default function ProfileSetup() {
     setLoading(true);
     setError(null);
   
+    if (!currentUser) {
+      setError('User is not logged in.');
+      setLoading(false);
+      return;
+    }
+  
     try {
       const response = await fetch('/api/users/profilesetup', {
         method: 'POST',
@@ -137,6 +143,7 @@ export default function ProfileSetup() {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

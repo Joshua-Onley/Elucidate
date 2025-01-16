@@ -47,12 +47,8 @@ export async function GET(req: Request) {
         }
 
         const currentUser = currentUserResult.rows[0];
-        console.log(currentUser)
         const { gender: currentUserGender, showtouser } = currentUser;
 
-        console.log('Current User ID:', currentUserId);
-        console.log('Current User Gender:', currentUserGender);
-        console.log('Show To User:', showtouser);
 
         // Adjust query to fetch filtered users based on current user's preferences
         const query = `
