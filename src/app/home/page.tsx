@@ -160,21 +160,57 @@ function UserCard({
 
   const handleRating = async (rating: 'like' | 'dislike') => {
     setRatingAnimation(rating);
+  
     try {
-      await fetch(`/api/users/${rating}`, {
+      // Record the current user's like/dislike action
+      const response = await fetch(`/api/users/${rating}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ likerId: currentUser?.id, likedId: user.id }),
       });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to record ${rating}`);
+      }
+  
+      // If the action is a 'like', check for a mutual match
+      if (rating === 'like') {
+        const mutualMatchResponse = await fetch('/api/matches/checkForMatch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ likerId: currentUser?.id, likedId: user.id }),
+        });
+  
+        if (!mutualMatchResponse.ok) {
+          throw new Error('Failed to check for mutual match');
+        }
+  
+        const { isMutualMatch } = await mutualMatchResponse.json();
+  
+        // If it's a mutual match, send a default message
+        if (isMutualMatch) {
+          await fetch('/api/matches/defaultMessage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              senderId: currentUser?.id,
+              receiverId: user.id,
+              messageText: 'Hi! We have a match! Let\'s start chatting! (Automatic message)',
+            }),
+          });
+        }
+      }
     } catch (error) {
-      console.error(`Error recording ${rating}:`, error);
+      console.error(`Error handling ${rating}:`, error);
     } finally {
+      // Reset animation and complete action
       setTimeout(() => {
         setRatingAnimation(null);
         onComplete();
       }, 1000);
     }
   };
+  
 
   const blurAmount = answeredQuestions === 3 ? 0 : 20 - answeredQuestions * 6;
 

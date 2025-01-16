@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,7 @@ export default function Matches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const router = useRouter();
 
   // Fetch the current user
   useEffect(() => {
@@ -58,6 +60,10 @@ export default function Matches() {
     fetchMatches();
   }, [currentUserId]);
 
+  const handleMessageClick = (matchId: number) => {
+    router.push(`/messages?matchId=${matchId}`);
+  };
+
   if (loading) {
     return <div className="text-center mt-8 text-gray-600">Loading matches...</div>;
   }
@@ -69,8 +75,6 @@ export default function Matches() {
   if (matches.length === 0) {
     return <div className="text-center mt-8 text-gray-600">No matches found</div>;
   }
-  console.log(matches);
-
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -79,12 +83,16 @@ export default function Matches() {
           <CardContent className="p-6">
             <div className="flex flex-col items-center">
               <Avatar className="w-32 h-32 mb-4 border-4 border-purple-500">
-              <AvatarImage src={`/${match.avatarUrl}`} alt={match.name} />
+                <AvatarImage src={`/${match.avatarUrl}`} alt={match.name} />
                 <AvatarFallback>{match.name[0]}</AvatarFallback>
               </Avatar>
               <h3 className="text-xl font-semibold mb-4">{match.name}</h3>
               <div className="flex space-x-4">
-                <Button variant="outline" className="flex items-center space-x-2 hover:bg-purple-100">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center space-x-2 hover:bg-purple-100"
+                  onClick={() => handleMessageClick(match.match_id)}
+                >
                   <MessageSquare className="w-4 h-4" />
                   <span>Message</span>
                 </Button>
