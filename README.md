@@ -93,7 +93,6 @@ CREATE TABLE likes (
     FOREIGN KEY (liker_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (liked_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
-
 ```
 Create the dislikes table:
 ```
@@ -106,7 +105,6 @@ CREATE TABLE dislikes (
     FOREIGN KEY (disliker_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (disliked_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
-
 ```
 
 Create the messages table:
@@ -123,4 +121,12 @@ CREATE TABLE messages (
 
 ```
 ### 4. Setup environment variables
-create a .env.local file in the root of the project and set up  database URL.
+create a .env.local file in the root of the project which contains the following variables:
+
+```
+DB_USER=
+DB_HOST=
+DB_NAME=
+DB_PASSWORD=
+DB_PORT=
+```
