@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, LogOut, Heart, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 
 export interface Option {
@@ -91,13 +92,49 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-8 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-4 sm:p-8 flex flex-col items-center">
+      <nav className="self-end mb-8 flex items-center space-x-4">
+        <Link href="/matches" passHref>
+          <Button variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+            <Heart className="w-5 h-5 mr-2" />
+            Matches
+          </Button>
+        </Link>
+        <Link href="/messages" passHref>
+          <Button variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+            <MessageCircle className="w-5 h-5 mr-2" />
+            Messages
+          </Button>
+        </Link>
+        <Button
+          variant="ghost"
+          className="text-white hover:bg-white hover:bg-opacity-20"
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/users/deleteSession', {
+                method: 'POST',
+              });
+        
+              if (!response.ok) {
+                throw new Error('Logout failed');
+              }
+        
+              // Optionally redirect the user to the login page or home page
+              window.location.href = '/';
+            } catch (error) {
+              console.error('Error during logout:', error);
+            }
+          }}
+        >
+          <LogOut className="w-5 h-5 mr-2" />
+          Logout
+        </Button>
+      </nav>
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-white">Elucidate</h1>
         <p className="text-xl text-white mt-2">Unblur your perfect match</p>
-        
       </header>
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md mx-auto">
         {users.length > 0 && (
           <UserCard
             key={users[currentUserIndex].id}
@@ -299,3 +336,4 @@ function UserCard({
     </motion.div>
   );
 }
+
