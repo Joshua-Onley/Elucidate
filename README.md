@@ -5,6 +5,9 @@ A modern dating application built using Next.js, React, PostgreSQL, and Tailwind
 # Screenshots and Demos
 
 ### 1. Home Page
+This is a demo of the application:
+
+![Demo](demo1.gif)
 
 
 
