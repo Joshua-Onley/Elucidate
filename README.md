@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dating App
 
-## Getting Started
+A modern dating application built using Next.js, React, PostgreSQL, and Tailwind CSS. This app allows users to sign up, log in, like/dislike other users, and view potential matches in real-time.
 
-First, run the development server:
+## Features
+
+- **User Authentication**: Secure login and sign-up using email and password.
+- **User Profiles**: Users can set up and update their profiles with photos, bios, and other details.
+- **Matching System**: Users can like/dislike other users, and potential matches are shown based on mutual interests.
+- **Real-time Chat**: Messaging functionality allows users to chat once they match with each other.
+- **Responsive Design**: The app is fully responsive and optimized for both desktop and mobile views.
+
+## Technologies Used
+
+- **Frontend**:
+  - [Next.js](https://nextjs.org/) - React-based framework for building modern web applications.
+  - [React](https://reactjs.org/) - JavaScript library for building user interfaces.
+  - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework for fast UI development.
+  - [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript for building more robust and maintainable code.
+
+- **Backend**:
+  - [Node.js](https://nodejs.org/) - JavaScript runtime built on Chrome's V8 engine.
+  - [Express.js](https://expressjs.com/) - Minimal and flexible Node.js web application framework for building APIs.
+  - [PostgreSQL](https://www.postgresql.org/) - Open-source relational database system for storing user and match data.
+  - [Prisma](https://www.prisma.io/) - ORM to interact with the PostgreSQL database.
+
+- **Authentication**:
+  - Secure authentication using JWT (JSON Web Tokens) for login and session management.
+
+## Setup and Installation
+
+To get started with the app locally, follow these steps:
+
+### 1. Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/yourusername/dating-app.git
+cd dating-app
