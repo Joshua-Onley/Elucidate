@@ -41,9 +41,86 @@ cd dating-app
 make sure you have Node.js installed. Then run: npm install
 
 ### 3. Setup local SQL database
-For this project i used a local PostgreSQL server running on my machine. Make sure you have PostgreSQL installed by following the instructions on the official PostgreSQL website: <a>https://www.postgresql.org/download/</a>
+For this project i used a local PostgreSQL server running on my machine. Make sure you have PostgreSQL installed by following the instructions on the official PostgreSQL website: <a>https://www.postgresql.org/download/</a>. Once PostgreSQL is installed you must connect to PostgreSQL; create a new database for the app; and connect to this new database.
 
 ### 4. Create database tables
+After setting up the PostgreSQL database, you must create the necessary tables manually using the following SQL commands: 
 
+Create the Users table:
+```
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    photo VARCHAR(255),
+    gender VARCHAR(10),
+    age INTEGER,
+    showtouser VARCHAR(6),
+    showuserprofileto VARCHAR(6)
+);
+```
+Create the Questions table:
+```
+CREATE TABLE questions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    question_text TEXT,
+    correct_answer VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+```
+
+Create the Options table:
+```
+CREATE TABLE options (
+    id SERIAL PRIMARY KEY,
+    question_id INTEGER,
+    option_text VARCHAR(255),
+    FOREIGN KEY (question_id) REFERENCES questions(id)
+);
+```
+
+Create the likes table: 
+```
+CREATE TABLE likes (
+    id SERIAL PRIMARY KEY,
+    liker_id INTEGER NOT NULL,
+    liked_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT likes_liker_id_liked_id_key UNIQUE (liker_id, liked_id),
+    FOREIGN KEY (liker_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (liked_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+```
+Create the dislikes table:
+```
+CREATE TABLE dislikes (
+    id SERIAL PRIMARY KEY,
+    disliker_id INTEGER NOT NULL,
+    disliked_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT dislikes_disliker_id_disliked_id_key UNIQUE (disliker_id, disliked_id),
+    FOREIGN KEY (disliker_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (disliked_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+```
+
+Create the messages table:
+```
+CREATE TABLE messages (
+    message_id SERIAL PRIMARY KEY,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    message_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id),
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id)
+);
+
+```
 ### 4. Setup environment variables
-create a .env.local file in the root of the project and set up your database URL.
+create a .env.local file in the root of the project and set up  database URL.
