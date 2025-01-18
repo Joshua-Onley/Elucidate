@@ -121,12 +121,21 @@ CREATE TABLE messages (
 
 ```
 ### 4. Setup environment variables
-create a .env.local file in the root of the project which contains the following variables:
+create a .env.local file in the root of the project which contains the following variables. You will need to assign values to these variables that depend on how you setup PostgreSQL.
 
 ```
-DB_USER=
-DB_HOST=
-DB_NAME=
-DB_PASSWORD=
-DB_PORT=
+DB_USER=your_db_user
+DB_HOST=localhost
+DB_NAME=your_database_name
+DB_PASSWORD=your_db_password
+DB_PORT=5432
+
 ```
+Create a .env file in the root of the project and add your session secret. You can generate a random secret using a tool such as openssl ```openssl rand -base64 32
+```
+
+```
+SESSION_SECRET=your_randomly_generated_session_secret
+```
+
+### 5. Start the development server
