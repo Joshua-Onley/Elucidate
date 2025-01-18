@@ -1,6 +1,12 @@
 # Dating App
 
-A modern dating application built using Next.js, React, PostgreSQL, and Tailwind CSS. This app allows users to sign up, log in, like/dislike other users, and view potential matches in real-time.
+A modern dating application built using Next.js, React, PostgreSQL, and Tailwind CSS. This app allows users to sign up, log in, like/dislike other user profiles, and view potential matches in real-time.
+
+# Screenshots and Demos
+
+### 1. Home Page
+
+
 
 ## Features
 
@@ -22,8 +28,7 @@ A modern dating application built using Next.js, React, PostgreSQL, and Tailwind
   - [Node.js](https://nodejs.org/) - JavaScript runtime built on Chrome's V8 engine.
   - [Express.js](https://expressjs.com/) - Minimal and flexible Node.js web application framework for building APIs.
   - [PostgreSQL](https://www.postgresql.org/) - Open-source relational database system for storing user and match data.
-  - [Prisma](https://www.prisma.io/) - ORM to interact with the PostgreSQL database.
-
+ 
 - **Authentication**:
   - Secure authentication using JWT (JSON Web Tokens) for login and session management.
 
@@ -120,7 +125,7 @@ CREATE TABLE messages (
 );
 
 ```
-### 4. Setup environment variables
+### 5. Setup environment variables
 create a .env.local file in the root of the project which contains the following variables. You will need to assign values to these variables that depend on how you setup PostgreSQL.
 
 ```
@@ -131,11 +136,21 @@ DB_PASSWORD=your_db_password
 DB_PORT=5432
 
 ```
-Create a .env file in the root of the project and add your session secret. You can generate a random secret using a tool such as openssl ```openssl rand -base64 32
+Create a .env file in the root of the project and add your session secret. You can generate a random secret using a tool such as openssl 
+```
+openssl rand -base64 32
 ```
 
 ```
 SESSION_SECRET=your_randomly_generated_session_secret
 ```
 
-### 5. Start the development server
+### 6. Start the development server
+
+To start the development server and view the app in your browser, run the following comand:
+```
+npm run dev
+```
+### 7. Contributing
+
+If you'd like to contribute to the project, feel free to fork the repository, create a feature branch, and submit a pull request with your proposed changes.
