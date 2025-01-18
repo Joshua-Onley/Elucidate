@@ -34,5 +34,16 @@ To get started with the app locally, follow these steps:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/dating-app.git
+git clone https://github.com/joshua-onley/dating-app.git
 cd dating-app
+```
+### 2. Install dependencies
+make sure you have Node.js installed. Then run: npm install
+
+### 3. Setup local SQL database
+For this project i used a local PostgreSQL server running on my machine. Make sure you have PostgreSQL installed by following the instructions on the official PostgreSQL website: <a>https://www.postgresql.org/download/</a>
+
+### 4. Create database tables
+
+### 4. Setup environment variables
+create a .env.local file in the root of the project and set up your database URL.
