@@ -1,16 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import pool from '@/app/lib/db'; // Adjust this path to your actual database setup
+import { NextRequest, NextResponse } from "next/server";
+import pool from "@/app/lib/db";
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url); // Use searchParams for query parameters
-    const userId = searchParams.get('userId'); // Get userId from query
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
 
     if (!userId) {
-      return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 },
+      );
     }
 
-    // Fetch matches from the database with a unique match_id
     const result = await pool.query(
       `
       SELECT 
@@ -26,12 +28,15 @@ export async function GET(req: NextRequest) {
         ON u.user_id = l1.liked_id
       WHERE l1.liker_id = $1;
       `,
-      [userId]
+      [userId],
     );
 
     return NextResponse.json(result.rows, { status: 200 });
   } catch (error) {
-    console.error('Error fetching matches:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error("Error fetching matches:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

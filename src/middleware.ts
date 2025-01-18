@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const isLoggedIn = req.cookies.get('session');
+  const isLoggedIn = req.cookies.get("session");
 
   if (!isLoggedIn) {
-    const loginUrl = new URL('/', req.url);
+    const loginUrl = new URL("/", req.url);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -13,5 +13,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/home', '/matches', '/messages'], 
+  matcher: ["/home", "/matches", "/messages"],
 };

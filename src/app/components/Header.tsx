@@ -1,8 +1,8 @@
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,21 +10,29 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Home, Users, MessageSquare, BarChart2, CreditCard, Bell, Menu } from 'lucide-react';
+} from "@/components/ui/dropdown-menu";
+import {
+  Home,
+  Users,
+  MessageSquare,
+  BarChart2,
+  CreditCard,
+  Bell,
+  Menu,
+} from "lucide-react";
 
 const navigation = [
-  { name: 'Home', href: '/', icon: Home },
-  { name: 'Matches', href: '/matches', icon: Users },
-  { name: 'Messages', href: '/messages', icon: MessageSquare },
-  { name: 'Analytics', href: '/analytics', icon: BarChart2 },
-  { name: 'Payments', href: '/payments', icon: CreditCard },
+  { name: "Home", href: "/", icon: Home },
+  { name: "Matches", href: "/matches", icon: Users },
+  { name: "Messages", href: "/messages", icon: MessageSquare },
+  { name: "Analytics", href: "/analytics", icon: BarChart2 },
+  { name: "Payments", href: "/payments", icon: CreditCard },
 ];
 
 const userNavigation = [
-  { name: 'Your Profile', href: '/profile' },
-  { name: 'Settings', href: '/settings' },
-  { name: 'Sign out', href: '/api/auth/signout' },
+  { name: "Your Profile", href: "/profile" },
+  { name: "Settings", href: "/settings" },
+  { name: "Sign out", href: "/api/auth/signout" },
 ];
 
 export default function Header() {
@@ -46,8 +54,8 @@ export default function Header() {
                   href={item.href}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                     pathname === item.href
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   }`}
                 >
                   <item.icon className="h-5 w-5 mr-2" />
@@ -62,7 +70,10 @@ export default function Header() {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg" alt="@shadcn" />
                     <AvatarFallback>SC</AvatarFallback>
@@ -107,8 +118,8 @@ export default function Header() {
                 href={item.href}
                 className={`flex items-center px-3 py-2 text-base font-medium rounded-md ${
                   pathname === item.href
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <item.icon className="h-5 w-5 mr-2" />
@@ -121,4 +132,3 @@ export default function Header() {
     </header>
   );
 }
-

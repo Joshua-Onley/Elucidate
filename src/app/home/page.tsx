@@ -1,12 +1,22 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, LogOut, Heart, MessageCircle } from 'lucide-react';
-import Link from 'next/link';
-
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  LogOut,
+  Heart,
+  MessageCircle,
+} from "lucide-react";
+import Link from "next/link";
 
 export interface Option {
   id: number;
@@ -37,16 +47,15 @@ export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-
   // Fetch the current user
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/users/fetchCurrentUser');
+        const response = await fetch("/api/users/fetchCurrentUser");
         const data = await response.json();
         setCurrentUser({ id: data.userId as number });
       } catch (error) {
-        console.error('Error fetching user from session:', error);
+        console.error("Error fetching user from session:", error);
       } finally {
         setLoading(false);
       }
@@ -61,17 +70,17 @@ export default function HomePage() {
       if (!currentUser) return;
 
       try {
-        const response = await fetch('/api/users/fetchUsers', {
-          method: 'GET',
+        const response = await fetch("/api/users/fetchUsers", {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${currentUser.id}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         });
         const data = await response.json();
         setUsers(data);
       } catch (error) {
-        console.error('Failed to fetch users:', error);
+        console.error("Failed to fetch users:", error);
       }
     };
 
@@ -81,27 +90,41 @@ export default function HomePage() {
   // Remove current user and move to next
   const moveToNextUser = () => {
     setUsers((prevUsers) => {
-      const updatedUsers = prevUsers.filter((_, index) => index !== currentUserIndex);
-      setCurrentUserIndex((prevIndex) => (updatedUsers.length > 0 ? prevIndex % updatedUsers.length : 0));
+      const updatedUsers = prevUsers.filter(
+        (_, index) => index !== currentUserIndex,
+      );
+      setCurrentUserIndex((prevIndex) =>
+        updatedUsers.length > 0 ? prevIndex % updatedUsers.length : 0,
+      );
       return updatedUsers;
     });
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-4 sm:p-8 flex flex-col items-center">
       <nav className="self-end mb-8 flex items-center space-x-4">
         <Link href="/matches" passHref>
-          <Button variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white hover:bg-opacity-20"
+          >
             <Heart className="w-5 h-5 mr-2" />
             Matches
           </Button>
         </Link>
         <Link href="/messages" passHref>
-          <Button variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white hover:bg-opacity-20"
+          >
             <MessageCircle className="w-5 h-5 mr-2" />
             Messages
           </Button>
@@ -111,15 +134,15 @@ export default function HomePage() {
           className="text-white hover:bg-white hover:bg-opacity-20"
           onClick={async () => {
             try {
-              const response = await fetch('/api/users/deleteSession', {
-                method: 'POST',
+              const response = await fetch("/api/users/deleteSession", {
+                method: "POST",
               });
               if (!response.ok) {
-                throw new Error('Logout failed');
+                throw new Error("Logout failed");
               }
-              window.location.href = '/';
+              window.location.href = "/";
             } catch (error) {
-              console.error('Error during logout:', error);
+              console.error("Error during logout:", error);
             }
           }}
         >
@@ -132,7 +155,7 @@ export default function HomePage() {
         <p className="text-xl text-white mt-2">Unblur your perfect match</p>
       </header>
       <div className="w-full max-w-md mx-auto">
-      {users.length > 0 ? (
+        {users.length > 0 ? (
           <UserCard
             key={users[currentUserIndex].id}
             user={users[currentUserIndex]}
@@ -141,7 +164,10 @@ export default function HomePage() {
           />
         ) : (
           <div className="text-white text-xl">
-            <p className="text-center">No more profiles available that match your preferences. Please check back later!</p>
+            <p className="text-center">
+              No more profiles available that match your preferences. Please
+              check back later!
+            </p>
           </div>
         )}
       </div>
@@ -163,7 +189,9 @@ function UserCard({
   const [attempts, setAttempts] = useState(0);
   const [shuffledOptions, setShuffledOptions] = useState<Option[]>([]);
   const [showRatingButtons, setShowRatingButtons] = useState(false);
-  const [ratingAnimation, setRatingAnimation] = useState<'like' | 'dislike' | null>(null);
+  const [ratingAnimation, setRatingAnimation] = useState<
+    "like" | "dislike" | null
+  >(null);
 
   useEffect(() => {
     const shuffleOptions = (options: Option[]) => {
@@ -194,44 +222,45 @@ function UserCard({
     setAttempts((prev) => prev + 1);
   };
 
-  const handleRating = async (rating: 'like' | 'dislike') => {
+  const handleRating = async (rating: "like" | "dislike") => {
     setRatingAnimation(rating);
-  
+
     try {
       // Record the current user's like/dislike action
       const response = await fetch(`/api/users/${rating}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ likerId: currentUser?.id, likedId: user.id }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to record ${rating}`);
       }
-  
+
       // If the action is a 'like', check for a mutual match
-      if (rating === 'like') {
-        const mutualMatchResponse = await fetch('/api/matches/checkForMatch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+      if (rating === "like") {
+        const mutualMatchResponse = await fetch("/api/matches/checkForMatch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ likerId: currentUser?.id, likedId: user.id }),
         });
-  
+
         if (!mutualMatchResponse.ok) {
-          throw new Error('Failed to check for mutual match');
+          throw new Error("Failed to check for mutual match");
         }
-  
+
         const { isMutualMatch } = await mutualMatchResponse.json();
-  
+
         // If it's a mutual match, send a default message
         if (isMutualMatch) {
-          await fetch('/api/matches/defaultMessage', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          await fetch("/api/matches/defaultMessage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               senderId: currentUser?.id,
               receiverId: user.id,
-              messageText: 'Hi! We have a match! Let\'s start chatting! (Automatic message)',
+              messageText:
+                "Hi! We have a match! Let's start chatting! (Automatic message)",
             }),
           });
         }
@@ -246,7 +275,6 @@ function UserCard({
       }, 1000);
     }
   };
-  
 
   const blurAmount = answeredQuestions === 3 ? 0 : 20 - answeredQuestions * 6;
 
@@ -259,7 +287,7 @@ function UserCard({
       <Card className="bg-white bg-opacity-90 overflow-hidden relative">
         {ratingAnimation && (
           <motion.div
-            className={`absolute inset-0 ${ratingAnimation === 'like' ? 'bg-green-500' : 'bg-red-500'}`}
+            className={`absolute inset-0 ${ratingAnimation === "like" ? "bg-green-500" : "bg-red-500"}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
@@ -268,7 +296,10 @@ function UserCard({
         <CardHeader className="relative h-96 mb-4">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${user.photo})`, filter: `blur(${blurAmount}px)` }}
+            style={{
+              backgroundImage: `url(${user.photo})`,
+              filter: `blur(${blurAmount}px)`,
+            }}
           />
           <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 px-2 py-1 rounded">
             <p className="text-white font-semibold">{user.name}</p>
@@ -284,7 +315,9 @@ function UserCard({
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <p className="font-semibold mb-2">{user.questions[currentQuestionIndex].question}</p>
+                <p className="font-semibold mb-2">
+                  {user.questions[currentQuestionIndex].question}
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {shuffledOptions.map((option) => (
                     <Button
@@ -309,14 +342,14 @@ function UserCard({
                 <Button
                   variant="outline"
                   className="text-red-500 hover:bg-red-100"
-                  onClick={() => handleRating('dislike')}
+                  onClick={() => handleRating("dislike")}
                 >
                   <ThumbsDown className="w-6 h-6" />
                 </Button>
                 <Button
                   variant="outline"
                   className="text-green-500 hover:bg-green-100"
-                  onClick={() => handleRating('like')}
+                  onClick={() => handleRating("like")}
                 >
                   <ThumbsUp className="w-6 h-6" />
                 </Button>
@@ -327,7 +360,7 @@ function UserCard({
         <CardFooter className="bg-gray-100 p-4">
           <p className="text-sm text-gray-600">
             {showRatingButtons
-              ? 'Rate this profile!'
+              ? "Rate this profile!"
               : `Answer correctly to unblur the photo! (${answeredQuestions}/3)`}
           </p>
         </CardFooter>
@@ -335,4 +368,3 @@ function UserCard({
     </motion.div>
   );
 }
-

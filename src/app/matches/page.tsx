@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react'
-import Matches from '@/app/components/Matches';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users } from 'lucide-react'
+import React from "react";
+import Matches from "@/app/components/Matches";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users } from "lucide-react";
 
 export default function MatchesPage() {
   return (
@@ -20,6 +20,5 @@ export default function MatchesPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
