@@ -45,23 +45,34 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
+  const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
+
 
   useEffect(() => {
-      const fetchCurrentUser = async () => {
-        try {
-          const response = await fetch('/api/users/fetchCurrentUser');
-          if (!response.ok) {
-            throw new Error('Failed to fetch current user');
-          }
-          const data = await response.json();
-          setCurrentUserId(data.userId);
-        } catch (error) {
-          console.error('Error fetching current user:', error);
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/users/fetchCurrentUser');
+        if (!response.ok) {
+          throw new Error('Failed to fetch current user');
         }
-      };
+        const data = await response.json();
+        setCurrentUserId(data.userId);
   
-      fetchCurrentUser();
-    }, [])
+        // Fetch user avatar and set it
+        const avatarResponse = await fetch(`/api/messages/getUserAvatar?userId=${data.userId}`);
+        if (!avatarResponse.ok) {
+          throw new Error('Failed to fetch user avatar');
+        }
+        const avatarData = await avatarResponse.json();
+        setCurrentUserAvatar(avatarData.photo || '/default-avatar.jpg'); // Use default if no avatar
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+  
+    fetchCurrentUser();
+  }, []);
+  
 
 
 
@@ -154,7 +165,7 @@ export default function MessagesPage() {
               id: insertedMessage.id, // Use the ID returned by the backend
               senderId: currentUserId || 0,
               senderName: 'You',
-              senderAvatar: '/placeholder.svg?height=40&width=40',
+              senderAvatar: currentUserAvatar ||  '/default-avatar.jpg',
               content: newMessage,
               timestamp: insertedMessage.createdAt, // Use the timestamp from the backend
             }

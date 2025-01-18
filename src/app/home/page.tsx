@@ -114,12 +114,9 @@ export default function HomePage() {
               const response = await fetch('/api/users/deleteSession', {
                 method: 'POST',
               });
-        
               if (!response.ok) {
                 throw new Error('Logout failed');
               }
-        
-              // Optionally redirect the user to the login page or home page
               window.location.href = '/';
             } catch (error) {
               console.error('Error during logout:', error);
@@ -135,13 +132,17 @@ export default function HomePage() {
         <p className="text-xl text-white mt-2">Unblur your perfect match</p>
       </header>
       <div className="w-full max-w-md mx-auto">
-        {users.length > 0 && (
+      {users.length > 0 ? (
           <UserCard
             key={users[currentUserIndex].id}
             user={users[currentUserIndex]}
             onComplete={moveToNextUser}
             currentUser={currentUser}
           />
+        ) : (
+          <div className="text-white text-xl">
+            <p className="text-center">No more profiles available that match your preferences. Please check back later!</p>
+          </div>
         )}
       </div>
     </div>
@@ -164,7 +165,6 @@ function UserCard({
   const [showRatingButtons, setShowRatingButtons] = useState(false);
   const [ratingAnimation, setRatingAnimation] = useState<'like' | 'dislike' | null>(null);
 
-  // Shuffle options for the current question
   useEffect(() => {
     const shuffleOptions = (options: Option[]) => {
       const shuffled = [...options];
@@ -179,7 +179,6 @@ function UserCard({
     setShuffledOptions(shuffleOptions(currentQuestion.options));
   }, [currentQuestionIndex, user.questions]);
 
-  // Update state when all attempts are used
   useEffect(() => {
     if (attempts >= 3) setShowRatingButtons(true);
   }, [attempts]);
