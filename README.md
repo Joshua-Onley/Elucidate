@@ -32,7 +32,7 @@ The messages page allows users that have matched to message each other.
 
 - **User Authentication**: Secure login and sign-up using email and password.
 - **User Profiles**: Users can set up and update their profiles with photos, bios, and other details.
-- **Matching System**: Users can like/dislike other users, and potential matches are shown based on mutual interests.
+- **Matching System**: Users can like/dislike other profiles. Users are only shown profiles based on the preferences they select on the profile setup page.
 - **Real-time Chat**: Messaging functionality allows users to chat once they match with each other.
 - **Responsive Design**: The app is fully responsive and optimized for both desktop and mobile views.
 
