@@ -5,7 +5,7 @@ A modern dating application built using Next.js, React, PostgreSQL, and Tailwind
 # Screenshots and Demos
 
 ### 1. Home Page
-This is a demo of the home page of the application where the users can view other profiles. Each user sets up 3 multiple choice questions that are tied to their profile. On the profile setup page each user creates 4 options for each of their questions (one correct answer).
+This is the home page of the application where users can view other profiles. Each user sets up 3 multiple choice questions that are tied to their profile. On the profile setup page each user creates 4 options for each of their questions (one correct answer).
 
 When users are shown other profiles on the home page, the multiple choice questions appear and the profile image is blurred.
 For every question the user answers correctly, the profile image will become less burred. If the user answers all 3 questions correctly the profile picture will become clear. After the user answers all three questions, a like/dislike button will appear on the profile and the user can decide whether to like/dislike that profile.
