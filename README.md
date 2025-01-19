@@ -14,7 +14,7 @@ For every question the user answers correctly, the profile image will become les
 
 ### 2. Matches/Messages page
 
-On the matches page users can view all the profiles of users that they have matched with (when both users like each others profile).
+On the matches page, users can view all the profiles of users that they have matched with (a match is when two users like each others profiles).
 The messages page allows users that have matched to message each other. 
 
 ![Demo](demo2.gif)
