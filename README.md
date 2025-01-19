@@ -1,6 +1,6 @@
 # Elucidate (Dating Webapp)
 
-A modern dating application built using Next.js, React, PostgreSQL, and Tailwind CSS. This app allows users to sign up, log in, like/dislike other user profiles, and view potential matches in real-time.
+A unique modern dating application built using Next.js, React, PostgreSQL, and Tailwind CSS. This app allows users to sign up, log in, like/dislike other user profiles, and view potential matches in real-time.
 
 # Screenshots and Demos
 
