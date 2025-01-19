@@ -59,14 +59,14 @@ To get started with the app locally, follow these steps:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/joshua-onley/dating-app.git
-cd dating-app
+git clone https://github.com/joshua-onley/Elucidate.git
+cd Elucidate
 ```
 ### 2. Install dependencies
 make sure you have Node.js installed. Then run: npm install
 
 ### 3. Setup local SQL database
-For this project i used a local PostgreSQL server running on my machine. Make sure you have PostgreSQL installed by following the instructions on the official PostgreSQL website: <a>https://www.postgresql.org/download/</a>. Once PostgreSQL is installed you must connect to PostgreSQL; create a new database for the app; and connect to this new database.
+For this project i used a local PostgreSQL server running on my machine. Make sure you have PostgreSQL installed by following the instructions on the official PostgreSQL website: <a>https://www.postgresql.org/download/</a>. Once PostgreSQL is installed, you must connect to PostgreSQL; create a new database for the app; and connect to this new database.
 
 ### 4. Create database tables
 After setting up the PostgreSQL database, you must create the necessary tables manually using the following SQL commands: 
